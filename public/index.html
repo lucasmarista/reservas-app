@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reservas – Tablets & Notebooks</title>
+  <style>
+    :root{ --bg:#f5f7fb; --fg:#1f2937; --muted:#6b7280; --card:#ffffff; --accent:#2563eb; --accent-2:#10b981; --danger:#ef4444; --warn:#f59e0b; --grid:#e5e7eb; --pill:#eef2ff; --shadow:0 6px 20px rgba(0,0,0,.08);}
+    *{box-sizing:border-box} html,body{height:100%} body{margin:0;font:16px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--fg)}
+    .container{max-width:1200px;margin:24px auto;padding:0 16px}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .title{display:flex;gap:12px;align-items:center} .title h1{font-size:22px;margin:0}
+    .badge{font-size:12px;background:var(--pill);color:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid #dbe3ff}
+    .panel{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .toolbar .left, .toolbar .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    button,.btn{appearance:none;border:1px solid #d1d5db;background:#fff;color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600}
+    button:hover{background:#f8fafc} .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)} .btn-accent:hover{filter:brightness(.96)}
+    .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+    .resource{display:flex;gap:8px;align-items:center}
+    .chip{display:inline-flex;gap:6px;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;font-weight:600}
+    .calendar{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}
+    .calendar th,.calendar td{border:1px solid var(--grid);vertical-align:top}
+    .calendar th{background:#f3f4f6;padding:10px;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
+    .calendar td{background:#fff;min-width:150px;height:72px;padding:6px;position:relative}
+    .time-col{width:220px;min-width:220px;background:#fafafa}
+    .time-col .slot-label{font-weight:700;font-size:13px}
+    .sub{font-size:12px;color:#6b7280}
+    .intervalo{background:linear-gradient(135deg,#fef3c7 0%,#fff7ed 100%)}
+    .reservation{background:#eef2ff;border:1px solid #dbe3ff;padding:6px 8px;border-radius:10px;margin-bottom:6px;font-size:13px;display:flex;gap:6px;align-items:center}
+    .reservation .qty{font-weight:800}
+    .reservation .type.tablet{color:#4338ca}
+    .reservation .type.note{color:#0ea5e9}
+    .reservation .meta{color:#6b7280}
+    .reservation .del{margin-left:auto;opacity:.6;cursor:pointer;display:none}
+    .admin-on .reservation .del{display:block}
+    .small{font-size:12px;color:#6b7280}
+    .week-nav{display:flex;gap:8px;align-items:center}
+    .week-nav input[type=date]{padding:8px 10px;border:1px solid #d1d5db;border-radius:10px}
+    .legend{display:flex;gap:10px;flex-wrap:wrap}
+    .grid-section{margin-top:16px}
+    .section-title{margin:8px 0 6px;color:#374151;font-size:14px;font-weight:800}
+    dialog{border:none;border-radius:16px;box-shadow:var(--shadow);width:min(680px,92vw)}
+    dialog::backdrop{background:rgba(0,0,0,.25)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:12px 16px}
+    .modal-body{padding:16px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+    .col-6{grid-column:span 6} .col-4{grid-column:span 4} .col-3{grid-column:span 3} .col-12{grid-column:span 12}
+    label{font-size:12px;color:#374151;font-weight:700;display:block;margin-bottom:4px}
+    input[type=text], input[type=number], input[type=date], select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+    .modal-actions{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
+    .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+    .admin-toggle{display:flex;gap:8px;align-items:center}
+    .hint{background:#ecfeff;border:1px solid #bae6fd;color:#075985;padding:10px 12px;border-radius:12px;font-size:13px}
+    @media (max-width:900px){ .time-col{position:sticky;left:0;z-index:2} .calendar{display:block;overflow:auto} .calendar table{min-width:900px}}
+    #jsError{display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;font-size:13px}
+    #jsError.show{display:block}
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <header>
+      <div class="title">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 3h14a2 2 0 0 1 2 2v11a4 4 0 0 1-4 4H9l-4 3v-3H5a2 2 0 0 1 2-2V5a2 2 0 0 1 2-2Z" stroke="#2563eb" stroke-width="1.5"/></svg>
+        <h1>Reservas – Tablets & Notebooks</h1>
+        <span class="badge">Aulas de 45 min</span>
+      </div>
+      <div class="resource">
+        <span class="chip">📱 <strong id="totTablets">0</strong> tablets</span>
+        <span class="chip">💻 <strong id="totNotes">0</strong> notebooks</span>
+        <button class="btn" id="btnEditTotals">Ajustar</button>
+      </div>
+    </header>
+
+    <div class="panel">
+      <div id="jsError">Houve um erro ao carregar a grade.</div>
+      <div class="toolbar">
+        <div class="left week-nav">
+          <button id="prevWeek">◀ Semana</button>
+          <button id="thisWeek">Hoje</button>
+          <button id="nextWeek">Semana ▶</button>
+          <input type="date" id="datePicker" />
+        </div>
+        <div class="right">
+          <button class="btn-accent" id="btnNew">+ Nova reserva</button>
+          <button id="btnExport">Exportar</button>
+          <label class="btn" for="importFile">Importar</label>
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+        </div>
+      </div>
+
+      <div class="hint">Professores escolhem o segmento e podem reservar várias aulas seguidas. Conflitos são bloqueados.</div>
+
+      <div class="grid-section">
+        <div class="section-title">Manhã</div>
+        <div class="calendar" id="calMorning"></div>
+      </div>
+      <div class="grid-section">
+        <div class="section-title">Tarde</div>
+        <div class="calendar" id="calAfternoon"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Nova Reserva -->
+  <dialog id="dlg">
+    <div class="modal-head"><strong>Nova reserva</strong><button onclick="dlg.close()">✖</button></div>
+    <form id="frm" class="modal-body">
+      <div class="grid">
+        <div class="col-4"><label>Dia</label><select id="fDay" required></select></div>
+        <div class="col-4"><label>Período</label><select id="fPeriod" required><option value="manha">Manhã</option><option value="tarde">Tarde</option></select></div>
+        <div class="col-4"><label>Segmento</label><select id="fSegment" required><option>Infantil</option><option>Fundamental 1</option><option>Fundamental 2</option><option>Ensino Médio</option></select></div>
+        <div class="col-6"><label>Início</label><select id="fStart" required></select></div>
+        <div class="col-3"><label>Duração (aulas)</label><input type="number" id="fSpan" min="1" max="6" value="1" /></div>
+        <div class="col-3"><label>Recurso</label><select id="fResource" required><option value="tablets">Tablets</option><option value="notebooks">Notebooks</option></select></div>
+        <div class="col-3"><label>Quantidade</label><input type="number" id="fQty" min="1" value="10" required /></div>
+        <div class="col-9"><label>Professor(a)</label><input type="text" id="fTeacher" required /></div>
+        <div class="col-6"><label>Turma</label><input type="text" id="fClass" required /></div>
+        <div class="col-6"><label>Observações</label><input type="text" id="fNotes" /></div>
+        <div class="col-12 small" id="conflictMsg"></div>
+      </div>
+      <div class="modal-actions"><button type="button" onclick="dlg.close()">Cancelar</button><button type="submit" class="btn-accent">Salvar reserva</button></div>
+    </form>
+  </dialog>
+
+  <!-- Modal Totais -->
+  <dialog id="dlgTotals">
+    <div class="modal-head"><strong>Ajustar quantidades</strong><button onclick="dlgTotals.close()">✖</button></div>
+    <div class="modal-body"><div class="grid"><div class="col-6"><label>Total de tablets</label><input type="number" id="mTablets" min="1" /></div><div class="col-6"><label>Total de notebooks</label><input type="number" id="mNotes" min="1" /></div></div></div>
+    <div class="modal-actions"><button onclick="dlgTotals.close()">Cancelar</button><button class="btn-accent" id="saveTotals">Salvar</button></div>
+  </dialog>
+
+<script>
+(function(){
+  const API_URL = '/api';
+  const REFRESH_MS = 10000;
+
+  const errBanner = document.getElementById('jsError');
+  const showErr = (m)=>{ if(errBanner){ errBanner.textContent=m||'Erro'; errBanner.classList.add('show'); } };
+
+  // horários (45 min)
+  const MORNING_F2M = ['07:15','08:00','08:45','10:00','10:45','11:30','12:15'];
+  const MORNING_IF1 = ['07:30','08:15','09:00','10:15','11:00','11:45','12:30'];
+  const AFTERNOON_ALL = ['13:30','14:15','15:00','16:15','17:00'];
+  const MORNING_COMBINED = [
+    {start:'07:15',label:'07:15–08:00 • Fund2/Médio'},
+    {start:'07:30',label:'07:30–08:15 • Infantil/Fund1'},
+    {start:'08:00',label:'08:00–08:45 • Fund2/Médio'},
+    {start:'08:15',label:'08:15–09:00 • Infantil/Fund1'},
+    {start:'08:45',label:'08:45–09:30 • Fund2/Médio'},
+    {start:'09:00',label:'09:00–09:45 • Infantil/Fund1'},
+    {intervalo:true,label:'INTERVALO'},
+    {start:'10:00',label:'10:00–10:45 • Fund2/Médio'},
+    {start:'10:15',label:'10:15–11:00 • Infantil/Fund1'},
+    {start:'10:45',label:'10:45–11:30 • Fund2/Médio'},
+    {start:'11:00',label:'11:00–11:45 • Infantil/Fund1'},
+    {start:'11:30',label:'11:30–12:15 • Fund2/Médio'},
+    {start:'11:45',label:'11:45–12:30 • Infantil/Fund1'},
+    {start:'12:15',label:'12:15–13:00 • Fund2/Médio'},
+    {start:'12:30',label:'12:30–13:15 • Infantil/Fund1'}
+  ];
+  const AFTERNOON_COMBINED = [
+    {start:'13:30',label:'13:30–14:15 • Todos os segmentos'},
+    {start:'14:15',label:'14:15–15:00 • Todos os segmentos'},
+    {start:'15:00',label:'15:00–15:45 • Todos os segmentos'},
+    {intervalo:true,label:'INTERVALO'},
+    {start:'16:15',label:'16:15–17:00 • Todos os segmentos'},
+    {start:'17:00',label:'17:00–17:45 • Todos os segmentos'}
+  ];
+
+  // estado (carregado da API)
+  let reservations = [];
+  let totals = { tablets: 247, notebooks: 150 };
+  const today = new Date();
+  let weekStart = startOfWeek(today);
+
+  // DOM
+  const calMorning = document.getElementById('calMorning');
+  const calAfternoon = document.getElementById('calAfternoon');
+  const btnNew = document.getElementById('btnNew');
+  const btnExport = document.getElementById('btnExport');
+  const importFile = document.getElementById('importFile');
+  const btnEditTotals = document.getElementById('btnEditTotals');
+  const prevWeek = document.getElementById('prevWeek');
+  const nextWeek = document.getElementById('nextWeek');
+  const thisWeek = document.getElementById('thisWeek');
+  const datePicker = document.getElementById('datePicker');
+  const totT = document.getElementById('totTablets');
+  const totN = document.getElementById('totNotes');
+
+  // modais
+  window.dlg = document.getElementById('dlg');
+  window.dlgTotals = document.getElementById('dlgTotals');
+  const frm = document.getElementById('frm');
+  const fDay = document.getElementById('fDay');
+  const fPeriod = document.getElementById('fPeriod');
+  const fSegment = document.getElementById('fSegment');
+  const fStart = document.getElementById('fStart');
+  const fSpan = document.getElementById('fSpan');
+  const fResource = document.getElementById('fResource');
+  const fQty = document.getElementById('fQty');
+  const fTeacher = document.getElementById('fTeacher');
+  const fClass = document.getElementById('fClass');
+  const fNotes = document.getElementById('fNotes');
+  const conflictMsg = document.getElementById('conflictMsg');
+  const mTab = document.getElementById('mTablets');
+  const mNote = document.getElementById('mNotes');
+  const saveTotals = document.getElementById('saveTotals');
+
+  // init
+  datePicker.value = toYmd(today);
+  fillFormDays();
+  refreshAll();
+  setInterval(refreshAll, REFRESH_MS);
+
+  btnNew.addEventListener('click', ()=>{ resetForm(); dlg.showModal(); });
+
+  btnExport.addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify({ totals, reservations }, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='reservas.json'; a.click(); URL.revokeObjectURL(url);
+  });
+
+  importFile.addEventListener('change', async (e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    try{ const text=await f.text(); const data=JSON.parse(text); await api('import',{data}); await refreshAll(); alert('Importado!'); }
+    catch{ alert('Arquivo inválido.'); }
+    e.target.value='';
+  });
+
+  btnEditTotals.addEventListener('click', ()=>{ mTab.value=totals.tablets; mNote.value=totals.notebooks; dlgTotals.showModal(); });
+  saveTotals.addEventListener('click', async ()=>{
+    const t = { tablets: clampInt(mTab.value,1,9999), notebooks: clampInt(mNote.value,1,9999) };
+    await api('setTotals',{ tot:t }); await refreshAll(); dlgTotals.close();
+  });
+
+  prevWeek.addEventListener('click',()=>{ weekStart=addDays(weekStart,-7); renderCalendars(); fillFormDays(); });
+  nextWeek.addEventListener('click',()=>{ weekStart=addDays(weekStart, 7); renderCalendars(); fillFormDays(); });
+  thisWeek.addEventListener('click',()=>{ weekStart=startOfWeek(new Date()); renderCalendars(); fillFormDays(); datePicker.value=toYmd(new Date()); });
+  datePicker.addEventListener('change',(e)=>{ const d=new Date(e.target.value+'T00:00'); if(!isNaN(d)){ weekStart=startOfWeek(d); renderCalendars(); fillFormDays(); }});
+
+  fPeriod.addEventListener('change', populateStarts);
+  fSegment.addEventListener('change', populateStarts);
+
+  frm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const dayIdx = parseInt(fDay.value,10);
+    const period = fPeriod.value;
+    const segment = fSegment.value;
+    const resource = fResource.value;
+    const qty = clampInt(fQty.value,1,9999);
+    const span = clampInt(fSpan.value,1,6);
+    const teacher = fTeacher.value.trim();
+    const turma = fClass.value.trim();
+    const notes = fNotes.value.trim();
+
+    const dayDate = addDays(weekStart, dayIdx);
+    const starts = getStartsFor(period, segment);
+    const i = starts.indexOf(fStart.value);
+    if (i === -1) { alert('Início inválido.'); return; }
+
+    const slots=[];
+    for(let k=0;k<span;k++){ const s=starts[i+k]; if(!s) break; slots.push({start:s,end:add45(s)}); }
+
+    const conflicts = checkConflicts(dayDate, slots, resource, qty);
+    if (conflicts.length){
+      conflictMsg.innerHTML = '<b>Conflito:</b><br>'+conflicts.map(c=>`• ${c.time} (faltam ${c.lack})`).join('<br>');
+      return;
+    }
+
+    await api('save',{ rec:{ date: toYmd(dayDate), period, segment, resource, qty, teacher, turma, notes, slots } });
+    dlg.close(); conflictMsg.textContent=''; await refreshAll();
+  });
+
+  function renderCalendars(){
+    totT.textContent = totals.tablets;
+    totN.textContent = totals.notebooks;
+    renderCalendar(calMorning, MORNING_COMBINED, 'manha');
+    renderCalendar(calAfternoon, AFTERNOON_COMBINED, 'tarde');
+  }
+
+  function renderCalendar(container, rows, period){
+    const days = getWeekDays(weekStart);
+    const table = document.createElement('table'); table.className='calendar';
+    const thead=document.createElement('thead'); const trh=document.createElement('tr');
+    trh.innerHTML = '<th class="time-col">Horário</th>'+days.map(d=>`<th>${weekdayName(d)}<div class="sub">${toBr(d)}</div></th>`).join('');
+    thead.appendChild(trh); table.appendChild(thead);
+
+    const tbody=document.createElement('tbody');
+    rows.forEach(row=>{
+      const tr=document.createElement('tr');
+      const tdTime=document.createElement('td'); tdTime.className='time-col';
+      if(row.intervalo){
+        tdTime.innerHTML = `<div class="slot-label">${row.label}</div>`;
+        tr.appendChild(tdTime);
+        for(let i=0;i<5;i++){ const td=document.createElement('td'); td.className='intervalo'; tr.appendChild(td); }
+        tbody.appendChild(tr); return;
+      }
+      tdTime.innerHTML = `<div class="slot-label">${row.label}</div>`;
+      tr.appendChild(tdTime);
+
+      for (let c=0;c<5;c++){
+        const td=document.createElement('td');
+        const d=addDays(weekStart,c); const ymd=toYmd(d);
+        const starters = reservations.filter(r=> r.date===ymd && r.period===period && r.slots.some(s=>s.start===row.start));
+        starters.forEach(r=>{
+          const div=document.createElement('div'); div.className='reservation';
+          const typeClass=(r.resource==='tablets')?'tablet':'note';
+          div.innerHTML = `<span class="qty">${r.qty}×</span> <span class="type ${typeClass}">${r.resource==='tablets'?'📱 Tablets':'💻 Notes'}</span> · <span>${esc(r.turma)}</span> · <span class="meta">${esc(r.teacher)}</span>`+(r.notes?` · <span class="meta">${esc(r.notes)}</span>`:'')+` <span class="del" title="Remover">🗑</span>`;
+          td.appendChild(div);
+        });
+        const available = availabilityAt(d,row.start);
+        const p=document.createElement('div'); p.className='small'; p.textContent=`Disp.: ${available.tablets}📱 / ${available.notebooks}💻`; td.appendChild(p);
+        td.addEventListener('click',()=>{ resetForm(); fDay.value=String(c); fPeriod.value=period; populateStarts(); fStart.value=row.start; dlg.showModal(); });
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody); container.innerHTML=''; container.appendChild(table);
+  }
+
+  // disponibilidade & conflitos
+  function availabilityAt(d,start){ const y=toYmd(d); const s0=toMin(start), e0=s0+45; let t=0,n=0;
+    reservations.forEach(r=>{ if(r.date!==y) return; r.slots.forEach(s=>{ const a=toMin(s.start), b=toMin(s.end); if(Math.max(s0,a)<Math.min(e0,b)){ if(r.resource==='tablets') t+=r.qty; else n+=r.qty; } }); });
+    return { tablets: Math.max(0, totals.tablets - t), notebooks: Math.max(0, totals.notebooks - n) };
+  }
+  function checkConflicts(dayDate,slots,resource,qty){ const y=toYmd(dayDate); const conflicts=[]; slots.forEach(ns=>{ const s0=toMin(ns.start), e0=toMin(ns.end); let used=0; reservations.forEach(r=>{ if(r.date!==y||r.resource!==resource) return; r.slots.forEach(os=>{ const a=toMin(os.start), b=toMin(os.end); if(Math.max(s0,a)<Math.min(e0,b)) used += r.qty; }); }); const cap=(resource==='tablets'?totals.tablets:totals.notebooks); const left=cap-used; if(qty>left) conflicts.push({time:`${ns.start}–${ns.end}`, lack: qty-left}); }); return conflicts; }
+
+  // helpers de API e UI
+  async function api(action,payload={}){ const body='data='+encodeURIComponent(JSON.stringify({action,...payload})); const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body}); const text=await res.text(); let json; try{ json=JSON.parse(text);}catch(e){ showErr('Resposta inválida do servidor'); throw e; } if(!json.ok){ showErr(json.error||'Erro API'); throw new Error(json.error||'Erro'); } return json; }
+  async function refreshAll(){ const t=await api('getTotals'); totals=t.totals; const l=await api('list'); reservations=l.items||[]; renderCalendars(); }
+  function populateStarts(){ const list=getStartsFor(fPeriod.value,fSegment.value); fStart.innerHTML=list.map(t=>`<option value="${t}">${t} – ${add45(t)}</option>`).join(''); }
+  function getStartsFor(period,segment){ if(period==='tarde') return AFTERNOON_ALL.slice(); if(segment==='Infantil'||segment==='Fundamental 1') return MORNING_IF1.slice(); if(segment==='Fundamental 2'||segment==='Ensino Médio') return MORNING_F2M.slice(); return []; }
+  function resetForm(){ conflictMsg.textContent=''; fDay.value='0'; fPeriod.value='manha'; fSegment.value='Infantil'; populateStarts(); fStart.value=getStartsFor('manha','Infantil')[0]; fSpan.value=1; fResource.value='tablets'; fQty.value=10; fTeacher.value=''; fClass.value=''; fNotes.value=''; }
+  function fillFormDays(){ const days=getWeekDays(weekStart); fDay.innerHTML=days.map((d,i)=>`<option value="${i}">${weekdayName(d)} - ${toBr(d)}</option>`).join(''); }
+
+  // datas
+  function startOfWeek(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); const day=x.getDay(); const diff=(day===0?-6:1-day); x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x; }
+  function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+  function getWeekDays(start){ return [0,1,2,3,4].map(i=>addDays(start,i)); }
+  function toBr(d){ return d.toLocaleDateString('pt-BR'); }
+  function toYmd(d){ const y=d.getFullYear(), m=('0'+(d.getMonth()+1)).slice(-2), da=('0'+d.getDate()).slice(-2); return `${y}-${m}-${da}`; }
+  function weekdayName(d){ const names=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']; const idx=(d.getDay()+6)%7; return names[idx]; }
+  function toMin(hm){ const [h,m]=hm.split(':').map(Number); return h*60+m; }
+  function fromMin(min){ const h=Math.floor(min/60), m=min%60; return `${('0'+h).slice(-2)}:${('0'+m).slice(-2)}`; }
+  function add45(hm){ return fromMin(toMin(hm)+45); }
+  function clampInt(v,min,max){ v=parseInt(v,10); if(isNaN(v)) v=min; return Math.max(min, Math.min(max, v)); }
+  function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+})();
+</script>
+</body>
+</html>

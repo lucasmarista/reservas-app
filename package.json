@@ -1,0 +1,12 @@
+{
+  "name": "reservas-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reservas de tablets/notebooks – Node + Express + frontend",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
