@@ -13,10 +13,13 @@
     .badge{font-size:12px;background:var(--pill);color:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid #dbe3ff}
     .panel{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px}
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .left, .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     button{appearance:none;border:1px solid #d1d5db;background:#fff;color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600}
     button:hover{background:#f8fafc}
     .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
     .chip{display:inline-flex;gap:6px;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;font-weight:600}
+    input[type=date]{padding:8px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+
     .calendar{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}
     .calendar th,.calendar td{border:1px solid var(--grid);vertical-align:top}
     .calendar th{background:#f3f4f6;padding:10px;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
@@ -24,6 +27,7 @@
     .time-col{width:220px;min-width:220px;background:#fafafa}
     .time-col .slot-label{font-weight:700;font-size:13px}
     .intervalo{background:linear-gradient(135deg,#fef3c7 0%,#fff7ed 100%)}
+
     .reservation{background:#eef2ff;border:1px solid #dbe3ff;padding:6px 8px;border-radius:10px;margin-bottom:6px;font-size:13px;display:flex;gap:6px;align-items:center}
     .reservation .qty{font-weight:800}
     .reservation .type.tablet{color:#4338ca}
@@ -31,9 +35,11 @@
     .reservation .meta{color:#6b7280}
     .reservation .del{margin-left:auto;opacity:.7;cursor:pointer;display:none}
     .admin-on .reservation .del{display:inline}
+
     .small{font-size:12px;color:#6b7280}
     .grid-section{margin-top:16px}
     .section-title{margin:8px 0 6px;color:#374151;font-size:14px;font-weight:800}
+
     dialog{border:none;border-radius:16px;box-shadow:var(--shadow);width:min(680px,92vw)}
     dialog::backdrop{background:rgba(0,0,0,.25)}
     .modal-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:12px 16px}
@@ -42,9 +48,11 @@
     .col-6{grid-column:span 6} .col-4{grid-column:span 4} .col-3{grid-column:span 3} .col-12{grid-column:span 12}
     label{font-size:12px;color:#374151;font-weight:700;display:block;margin-bottom:4px}
     input[type=text], input[type=number], select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+
     .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap}
     .admin-toggle{display:flex;gap:8px;align-items:center}
     .hint{background:#ecfeff;border:1px solid #bae6fd;color:#075985;padding:10px 12px;border-radius:12px;font-size:13px;margin-bottom:10px}
+
     @media (max-width:900px){ .time-col{position:sticky;left:0;z-index:2} .calendar{display:block;overflow:auto} .calendar table{min-width:900px}}
     #jsError{display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;font-size:13px}
     #jsError.show{display:block}
@@ -66,6 +74,21 @@
 
     <div class="panel">
       <div id="jsError">Houve um erro ao carregar a grade.</div>
+
+      <!-- NAV DA SEMANA -->
+      <div class="toolbar">
+        <div class="left">
+          <button id="prevWeek">◀ Semana</button>
+          <button id="thisWeek">Hoje</button>
+          <button id="nextWeek">Semana ▶</button>
+          <input type="date" id="datePicker" />
+        </div>
+        <div class="right">
+          <button id="btnExport">Exportar</button>
+          <label class="btn" for="importFile">Importar</label>
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+        </div>
+      </div>
 
       <div class="hint">Professores escolhem o segmento e podem reservar várias aulas seguidas.</div>
 
@@ -91,12 +114,6 @@
           <button id="btnAdmin">Ativar admin</button>
           <span class="small" id="adminStatus">Modo admin: desligado</span>
         </div>
-
-        <div style="margin-left:auto">
-          <button id="btnExport">Exportar</button>
-          <label class="btn" for="importFile">Importar</label>
-          <input id="importFile" type="file" accept="application/json" style="display:none" />
-        </div>
       </div>
     </div>
   </div>
@@ -107,11 +124,24 @@
     <form id="frm" class="modal-body">
       <div class="grid">
         <div class="col-4"><label>Dia</label><select id="fDay" required></select></div>
-        <div class="col-4"><label>Período</label><select id="fPeriod" required><option value="manha">Manhã</option><option value="tarde">Tarde</option></select></div>
-        <div class="col-4"><label>Segmento</label><select id="fSegment" required><option>Infantil</option><option>Fundamental 1</option><option>Fundamental 2</option><option>Ensino Médio</option></select></div>
+        <div class="col-4"><label>Período</label>
+          <select id="fPeriod" required>
+            <option value="manha">Manhã</option><option value="tarde">Tarde</option>
+          </select>
+        </div>
+        <div class="col-4"><label>Segmento</label>
+          <select id="fSegment" required>
+            <option>Infantil</option><option>Fundamental 1</option>
+            <option>Fundamental 2</option><option>Ensino Médio</option>
+          </select>
+        </div>
         <div class="col-6"><label>Início</label><select id="fStart" required></select></div>
         <div class="col-3"><label>Duração (aulas)</label><input type="number" id="fSpan" min="1" max="6" value="1" /></div>
-        <div class="col-3"><label>Recurso</label><select id="fResource" required><option value="tablets">Tablets</option><option value="notebooks">Notebooks</option></select></div>
+        <div class="col-3"><label>Recurso</label>
+          <select id="fResource" required>
+            <option value="tablets">Tablets</option><option value="notebooks">Notebooks</option>
+          </select>
+        </div>
         <div class="col-3"><label>Quantidade</label><input type="number" id="fQty" min="1" value="10" required /></div>
         <div class="col-9"><label>Professor(a)</label><input type="text" id="fTeacher" required /></div>
         <div class="col-6"><label>Turma</label><input type="text" id="fClass" required /></div>
@@ -163,7 +193,7 @@
     {start:'17:00',label:'17:00–17:45 • Todos os segmentos'}
   ];
 
-  // estado (do servidor)
+  // estado
   let reservations = [];
   let totals = { tablets: 247, notebooks: 150 };
   const today = new Date();
@@ -177,6 +207,12 @@
   const importFile = document.getElementById('importFile');
   const totT = document.getElementById('totTablets');
   const totN = document.getElementById('totNotes');
+
+  // nav semana
+  const prevWeek = document.getElementById('prevWeek');
+  const nextWeek = document.getElementById('nextWeek');
+  const thisWeek = document.getElementById('thisWeek');
+  const datePicker = document.getElementById('datePicker');
 
   // admin
   const adminPassInput = document.getElementById('adminPass');
@@ -201,6 +237,7 @@
   const conflictMsg = document.getElementById('conflictMsg');
 
   // init
+  datePicker.value = toYmd(today);
   fillFormDays();
   refreshAll();
   setInterval(refreshAll, REFRESH_MS);
@@ -208,6 +245,12 @@
 
   // eventos
   btnNew.addEventListener('click', ()=>{ resetForm(); dlg.showModal(); });
+
+  // navegação de semanas
+  prevWeek.addEventListener('click', ()=>{ weekStart = addDays(weekStart, -7); fillFormDays(); renderCalendars(); });
+  nextWeek.addEventListener('click', ()=>{ weekStart = addDays(weekStart, 7); fillFormDays(); renderCalendars(); });
+  thisWeek.addEventListener('click', ()=>{ weekStart = startOfWeek(new Date()); datePicker.value = toYmd(new Date()); fillFormDays(); renderCalendars(); });
+  datePicker.addEventListener('change', (e)=>{ const d=new Date(e.target.value+'T00:00'); if(!isNaN(d)) { weekStart = startOfWeek(d); fillFormDays(); renderCalendars(); } });
 
   btnExport.addEventListener('click', ()=>{
     const blob = new Blob([JSON.stringify({ totals, reservations }, null, 2)], {type:'application/json'});
@@ -256,7 +299,7 @@
     const slots=[];
     for(let k=0;k<span;k++){ const s=starts[i+k]; if(!s) break; slots.push({start:s,end:add45(s)}); }
 
-    const conflicts = checkConflicts(dayDate, slots, resource, qty); // já sem dupla contagem
+    const conflicts = checkConflicts(dayDate, slots, resource, qty);
     if (conflicts.length){
       conflictMsg.innerHTML = '<b>Conflito:</b><br>'+conflicts.map(c=>`• ${c.time} (faltam ${c.lack})`).join('<br>');
       return;
@@ -313,7 +356,7 @@
           td.appendChild(div);
         });
 
-        const available = availabilityAt(d,row.start); // corrigido: sem dupla contagem
+        const available = availabilityAt(d,row.start);
         const p=document.createElement('div'); p.className='small'; p.textContent=`Disp.: ${available.tablets}📱 / ${available.notebooks}💻`;
         td.appendChild(p);
 
@@ -323,17 +366,15 @@
       tbody.appendChild(tr);
     });
     table.appendChild(tbody); container.innerHTML=''; container.appendChild(table);
-    // aplica classe admin-on para mostrar ícones
     container.classList.toggle('admin-on', adminOn);
   }
 
-  // ======= disponibilidade & conflitos (CORRIGIDOS) =======
+  // ======= disponibilidade & conflitos (sem dupla contagem) =======
   function availabilityAt(dateObj, startHHMM){
     const ymd = toYmd(dateObj);
     const s0 = toMin(startHHMM), e0 = s0 + 45;
-
     let usedT = 0, usedN = 0;
-    // conta por RESERVA, não por slot — evita dupla contagem quando a reserva cruza 2 blocos
+
     reservations.forEach(r=>{
       if (r.date !== ymd) return;
       const overlaps = r.slots && r.slots.some(s=>{
@@ -355,10 +396,8 @@
     const ymd = toYmd(dayDate);
     const conflicts = [];
 
-    // Para cada NOVO slot, ver capacidade restante,
-    // SOMANDO reservas existentes uma única vez por reserva.
     slots.forEach(ns=>{
-      const s0 = toMin(ns.start), e0 = toMin(ns.end);
+      const s0 = toMin(ns.start), e0 = s0 + 45;
       let used = 0;
 
       reservations.forEach(r=>{
@@ -368,7 +407,7 @@
           const a = toMin(s.start), b = toMin(s.end);
           return Math.max(s0, a) < Math.min(e0, b);
         });
-        if (overlaps) used += r.qty; // conta só 1x por reserva
+        if (overlaps) used += r.qty; // conta 1x por reserva
       });
 
       const cap = (resource==='tablets') ? totals.tablets : totals.notebooks;
@@ -415,6 +454,3 @@
 </script>
 </body>
 </html>
-
-
-
