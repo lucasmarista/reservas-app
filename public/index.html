@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reservas – Tablets & Notebooks</title>
+  <title>Marista Arquidiocesano - Tablets e Notebooks</title>
   <style>
-    :root{ --bg:#f5f7fb; --fg:#1f2937; --muted:#6b7280; --card:#ffffff; --accent:#2563eb; --accent-2:#10b981; --danger:#ef4444; --warn:#f59e0b; --grid:#e5e7eb; --pill:#eef2ff; --shadow:0 6px 20px rgba(0,0,0,.08);}
+    :root{ --bg:#f5f7fb; --fg:#1f2937; --muted:#6b7280; --card:#ffffff; --accent:#2563eb; --danger:#ef4444; --grid:#e5e7eb; --pill:#eef2ff; --shadow:0 6px 20px rgba(0,0,0,.08);}
     *{box-sizing:border-box} html,body{height:100%} body{margin:0;font:16px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--fg)}
     .container{max-width:1200px;margin:24px auto;padding:0 16px}
     header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -13,11 +13,9 @@
     .badge{font-size:12px;background:var(--pill);color:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid #dbe3ff}
     .panel{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px}
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .toolbar .left, .toolbar .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    button,.btn{appearance:none;border:1px solid #d1d5db;background:#fff;color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600}
-    button:hover{background:#f8fafc} .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)} .btn-accent:hover{filter:brightness(.96)}
-    .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
-    .resource{display:flex;gap:8px;align-items:center}
+    button{appearance:none;border:1px solid #d1d5db;background:#fff;color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600}
+    button:hover{background:#f8fafc}
+    .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
     .chip{display:inline-flex;gap:6px;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;font-weight:600}
     .calendar{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}
     .calendar th,.calendar td{border:1px solid var(--grid);vertical-align:top}
@@ -25,19 +23,15 @@
     .calendar td{background:#fff;min-width:150px;height:72px;padding:6px;position:relative}
     .time-col{width:220px;min-width:220px;background:#fafafa}
     .time-col .slot-label{font-weight:700;font-size:13px}
-    .sub{font-size:12px;color:#6b7280}
     .intervalo{background:linear-gradient(135deg,#fef3c7 0%,#fff7ed 100%)}
     .reservation{background:#eef2ff;border:1px solid #dbe3ff;padding:6px 8px;border-radius:10px;margin-bottom:6px;font-size:13px;display:flex;gap:6px;align-items:center}
     .reservation .qty{font-weight:800}
     .reservation .type.tablet{color:#4338ca}
     .reservation .type.note{color:#0ea5e9}
     .reservation .meta{color:#6b7280}
-    .reservation .del{margin-left:auto;opacity:.6;cursor:pointer;display:none}
-    .admin-on .reservation .del{display:block}
+    .reservation .del{margin-left:auto;opacity:.7;cursor:pointer;display:none}
+    .admin-on .reservation .del{display:inline}
     .small{font-size:12px;color:#6b7280}
-    .week-nav{display:flex;gap:8px;align-items:center}
-    .week-nav input[type=date]{padding:8px 10px;border:1px solid #d1d5db;border-radius:10px}
-    .legend{display:flex;gap:10px;flex-wrap:wrap}
     .grid-section{margin-top:16px}
     .section-title{margin:8px 0 6px;color:#374151;font-size:14px;font-weight:800}
     dialog{border:none;border-radius:16px;box-shadow:var(--shadow);width:min(680px,92vw)}
@@ -47,11 +41,10 @@
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
     .col-6{grid-column:span 6} .col-4{grid-column:span 4} .col-3{grid-column:span 3} .col-12{grid-column:span 12}
     label{font-size:12px;color:#374151;font-weight:700;display:block;margin-bottom:4px}
-    input[type=text], input[type=number], input[type=date], select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
-    .modal-actions{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
-    .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+    input[type=text], input[type=number], select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+    .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap}
     .admin-toggle{display:flex;gap:8px;align-items:center}
-    .hint{background:#ecfeff;border:1px solid #bae6fd;color:#075985;padding:10px 12px;border-radius:12px;font-size:13px}
+    .hint{background:#ecfeff;border:1px solid #bae6fd;color:#075985;padding:10px 12px;border-radius:12px;font-size:13px;margin-bottom:10px}
     @media (max-width:900px){ .time-col{position:sticky;left:0;z-index:2} .calendar{display:block;overflow:auto} .calendar table{min-width:900px}}
     #jsError{display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;font-size:13px}
     #jsError.show{display:block}
@@ -61,35 +54,20 @@
   <div class="container" id="app">
     <header>
       <div class="title">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 3h14a2 2 0 0 1 2 2v11a4 4 0 0 1-4 4H9l-4 3v-3H5a2 2 0 0 1 2-2V5a2 2 0 0 1 2-2Z" stroke="#2563eb" stroke-width="1.5"/></svg>
         <h1>Reservas – Tablets & Notebooks</h1>
         <span class="badge">Aulas de 45 min</span>
       </div>
       <div class="resource">
         <span class="chip">📱 <strong id="totTablets">0</strong> tablets</span>
         <span class="chip">💻 <strong id="totNotes">0</strong> notebooks</span>
-        <button class="btn" id="btnEditTotals">Ajustar</button>
+        <button class="btn-accent" id="btnNew">+ Nova reserva</button>
       </div>
     </header>
 
     <div class="panel">
       <div id="jsError">Houve um erro ao carregar a grade.</div>
-      <div class="toolbar">
-        <div class="left week-nav">
-          <button id="prevWeek">◀ Semana</button>
-          <button id="thisWeek">Hoje</button>
-          <button id="nextWeek">Semana ▶</button>
-          <input type="date" id="datePicker" />
-        </div>
-        <div class="right">
-          <button class="btn-accent" id="btnNew">+ Nova reserva</button>
-          <button id="btnExport">Exportar</button>
-          <label class="btn" for="importFile">Importar</label>
-          <input id="importFile" type="file" accept="application/json" style="display:none" />
-        </div>
-      </div>
 
-      <div class="hint">Professores escolhem o segmento e podem reservar várias aulas seguidas. Conflitos são bloqueados.</div>
+      <div class="hint">Professores escolhem o segmento e podem reservar várias aulas seguidas. Conflitos são bloqueados. As sobreposições entre 7:15↔7:30 são tratadas sem dupla contagem.</div>
 
       <div class="grid-section">
         <div class="section-title">Manhã</div>
@@ -98,6 +76,27 @@
       <div class="grid-section">
         <div class="section-title">Tarde</div>
         <div class="calendar" id="calAfternoon"></div>
+      </div>
+
+      <div class="foot">
+        <div class="legend">
+          <span class="chip">📱 Tablets</span>
+          <span class="chip">💻 Notebooks</span>
+          <span class="chip">⏱ 45 min</span>
+        </div>
+
+        <!-- BLOCO ADMIN -->
+        <div class="admin-toggle">
+          <input type="password" id="adminPass" placeholder="Senha admin (ex.: marista@2025)" />
+          <button id="btnAdmin">Ativar admin</button>
+          <span class="small" id="adminStatus">Modo admin: desligado</span>
+        </div>
+
+        <div style="margin-left:auto">
+          <button id="btnExport">Exportar</button>
+          <label class="btn" for="importFile">Importar</label>
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+        </div>
       </div>
     </div>
   </div>
@@ -119,15 +118,11 @@
         <div class="col-6"><label>Observações</label><input type="text" id="fNotes" /></div>
         <div class="col-12 small" id="conflictMsg"></div>
       </div>
-      <div class="modal-actions"><button type="button" onclick="dlg.close()">Cancelar</button><button type="submit" class="btn-accent">Salvar reserva</button></div>
+      <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px">
+        <button type="button" onclick="dlg.close()">Cancelar</button>
+        <button type="submit" class="btn-accent">Salvar reserva</button>
+      </div>
     </form>
-  </dialog>
-
-  <!-- Modal Totais -->
-  <dialog id="dlgTotals">
-    <div class="modal-head"><strong>Ajustar quantidades</strong><button onclick="dlgTotals.close()">✖</button></div>
-    <div class="modal-body"><div class="grid"><div class="col-6"><label>Total de tablets</label><input type="number" id="mTablets" min="1" /></div><div class="col-6"><label>Total de notebooks</label><input type="number" id="mNotes" min="1" /></div></div></div>
-    <div class="modal-actions"><button onclick="dlgTotals.close()">Cancelar</button><button class="btn-accent" id="saveTotals">Salvar</button></div>
   </dialog>
 
 <script>
@@ -168,7 +163,7 @@
     {start:'17:00',label:'17:00–17:45 • Todos os segmentos'}
   ];
 
-  // estado (carregado da API)
+  // estado (do servidor)
   let reservations = [];
   let totals = { tablets: 247, notebooks: 150 };
   const today = new Date();
@@ -180,17 +175,18 @@
   const btnNew = document.getElementById('btnNew');
   const btnExport = document.getElementById('btnExport');
   const importFile = document.getElementById('importFile');
-  const btnEditTotals = document.getElementById('btnEditTotals');
-  const prevWeek = document.getElementById('prevWeek');
-  const nextWeek = document.getElementById('nextWeek');
-  const thisWeek = document.getElementById('thisWeek');
-  const datePicker = document.getElementById('datePicker');
   const totT = document.getElementById('totTablets');
   const totN = document.getElementById('totNotes');
 
-  // modais
+  // admin
+  const adminPassInput = document.getElementById('adminPass');
+  const btnAdmin = document.getElementById('btnAdmin');
+  const adminStatus = document.getElementById('adminStatus');
+  let adminOn = false;
+  let adminPassVal = '';
+
+  // modal
   window.dlg = document.getElementById('dlg');
-  window.dlgTotals = document.getElementById('dlgTotals');
   const frm = document.getElementById('frm');
   const fDay = document.getElementById('fDay');
   const fPeriod = document.getElementById('fPeriod');
@@ -203,16 +199,14 @@
   const fClass = document.getElementById('fClass');
   const fNotes = document.getElementById('fNotes');
   const conflictMsg = document.getElementById('conflictMsg');
-  const mTab = document.getElementById('mTablets');
-  const mNote = document.getElementById('mNotes');
-  const saveTotals = document.getElementById('saveTotals');
 
   // init
-  datePicker.value = toYmd(today);
   fillFormDays();
   refreshAll();
   setInterval(refreshAll, REFRESH_MS);
+  updateAdminUI();
 
+  // eventos
   btnNew.addEventListener('click', ()=>{ resetForm(); dlg.showModal(); });
 
   btnExport.addEventListener('click', ()=>{
@@ -227,19 +221,20 @@
     e.target.value='';
   });
 
-  btnEditTotals.addEventListener('click', ()=>{ mTab.value=totals.tablets; mNote.value=totals.notebooks; dlgTotals.showModal(); });
-  saveTotals.addEventListener('click', async ()=>{
-    const t = { tablets: clampInt(mTab.value,1,9999), notebooks: clampInt(mNote.value,1,9999) };
-    await api('setTotals',{ tot:t }); await refreshAll(); dlgTotals.close();
+  btnAdmin.addEventListener('click', ()=>{
+    if (!adminOn) {
+      const v = (adminPassInput.value || '').trim();
+      if (!v) { alert('Digite a senha admin.'); return; }
+      adminPassVal = v;
+      adminOn = true;
+    } else {
+      adminOn = false;
+      adminPassVal = '';
+      adminPassInput.value = '';
+    }
+    updateAdminUI();
+    renderCalendars();
   });
-
-  prevWeek.addEventListener('click',()=>{ weekStart=addDays(weekStart,-7); renderCalendars(); fillFormDays(); });
-  nextWeek.addEventListener('click',()=>{ weekStart=addDays(weekStart, 7); renderCalendars(); fillFormDays(); });
-  thisWeek.addEventListener('click',()=>{ weekStart=startOfWeek(new Date()); renderCalendars(); fillFormDays(); datePicker.value=toYmd(new Date()); });
-  datePicker.addEventListener('change',(e)=>{ const d=new Date(e.target.value+'T00:00'); if(!isNaN(d)){ weekStart=startOfWeek(d); renderCalendars(); fillFormDays(); }});
-
-  fPeriod.addEventListener('change', populateStarts);
-  fSegment.addEventListener('change', populateStarts);
 
   frm.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -261,7 +256,7 @@
     const slots=[];
     for(let k=0;k<span;k++){ const s=starts[i+k]; if(!s) break; slots.push({start:s,end:add45(s)}); }
 
-    const conflicts = checkConflicts(dayDate, slots, resource, qty);
+    const conflicts = checkConflicts(dayDate, slots, resource, qty); // já sem dupla contagem
     if (conflicts.length){
       conflictMsg.innerHTML = '<b>Conflito:</b><br>'+conflicts.map(c=>`• ${c.time} (faltam ${c.lack})`).join('<br>');
       return;
@@ -271,6 +266,7 @@
     dlg.close(); conflictMsg.textContent=''; await refreshAll();
   });
 
+  // ======= render =======
   function renderCalendars(){
     totT.textContent = totals.tablets;
     totN.textContent = totals.notebooks;
@@ -282,7 +278,7 @@
     const days = getWeekDays(weekStart);
     const table = document.createElement('table'); table.className='calendar';
     const thead=document.createElement('thead'); const trh=document.createElement('tr');
-    trh.innerHTML = '<th class="time-col">Horário</th>'+days.map(d=>`<th>${weekdayName(d)}<div class="sub">${toBr(d)}</div></th>`).join('');
+    trh.innerHTML = '<th class="time-col">Horário</th>'+days.map(d=>`<th>${weekdayName(d)}<div class="small">${toBr(d)}</div></th>`).join('');
     thead.appendChild(trh); table.appendChild(thead);
 
     const tbody=document.createElement('tbody');
@@ -306,34 +302,99 @@
           const div=document.createElement('div'); div.className='reservation';
           const typeClass=(r.resource==='tablets')?'tablet':'note';
           div.innerHTML = `<span class="qty">${r.qty}×</span> <span class="type ${typeClass}">${r.resource==='tablets'?'📱 Tablets':'💻 Notes'}</span> · <span>${esc(r.turma)}</span> · <span class="meta">${esc(r.teacher)}</span>`+(r.notes?` · <span class="meta">${esc(r.notes)}</span>`:'')+` <span class="del" title="Remover">🗑</span>`;
+          const del = div.querySelector('.del');
+          del.addEventListener('click', async (ev)=>{
+            ev.stopPropagation();
+            if (!adminOn) return;
+            if (!confirm('Excluir esta reserva?')) return;
+            try { await api('delete', { id: r.id, admin: adminPassVal }); await refreshAll(); }
+            catch(e){ alert('Senha inválida ou erro ao excluir.'); adminOn=false; adminPassVal=''; adminPassInput.value=''; updateAdminUI(); renderCalendars(); }
+          });
           td.appendChild(div);
         });
-        const available = availabilityAt(d,row.start);
-        const p=document.createElement('div'); p.className='small'; p.textContent=`Disp.: ${available.tablets}📱 / ${available.notebooks}💻`; td.appendChild(p);
+
+        const available = availabilityAt(d,row.start); // corrigido: sem dupla contagem
+        const p=document.createElement('div'); p.className='small'; p.textContent=`Disp.: ${available.tablets}📱 / ${available.notebooks}💻`;
+        td.appendChild(p);
+
         td.addEventListener('click',()=>{ resetForm(); fDay.value=String(c); fPeriod.value=period; populateStarts(); fStart.value=row.start; dlg.showModal(); });
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
     });
     table.appendChild(tbody); container.innerHTML=''; container.appendChild(table);
+    // aplica classe admin-on para mostrar ícones
+    container.classList.toggle('admin-on', adminOn);
   }
 
-  // disponibilidade & conflitos
-  function availabilityAt(d,start){ const y=toYmd(d); const s0=toMin(start), e0=s0+45; let t=0,n=0;
-    reservations.forEach(r=>{ if(r.date!==y) return; r.slots.forEach(s=>{ const a=toMin(s.start), b=toMin(s.end); if(Math.max(s0,a)<Math.min(e0,b)){ if(r.resource==='tablets') t+=r.qty; else n+=r.qty; } }); });
-    return { tablets: Math.max(0, totals.tablets - t), notebooks: Math.max(0, totals.notebooks - n) };
-  }
-  function checkConflicts(dayDate,slots,resource,qty){ const y=toYmd(dayDate); const conflicts=[]; slots.forEach(ns=>{ const s0=toMin(ns.start), e0=toMin(ns.end); let used=0; reservations.forEach(r=>{ if(r.date!==y||r.resource!==resource) return; r.slots.forEach(os=>{ const a=toMin(os.start), b=toMin(os.end); if(Math.max(s0,a)<Math.min(e0,b)) used += r.qty; }); }); const cap=(resource==='tablets'?totals.tablets:totals.notebooks); const left=cap-used; if(qty>left) conflicts.push({time:`${ns.start}–${ns.end}`, lack: qty-left}); }); return conflicts; }
+  // ======= disponibilidade & conflitos (CORRIGIDOS) =======
+  function availabilityAt(dateObj, startHHMM){
+    const ymd = toYmd(dateObj);
+    const s0 = toMin(startHHMM), e0 = s0 + 45;
 
-  // helpers de API e UI
-  async function api(action,payload={}){ const body='data='+encodeURIComponent(JSON.stringify({action,...payload})); const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body}); const text=await res.text(); let json; try{ json=JSON.parse(text);}catch(e){ showErr('Resposta inválida do servidor'); throw e; } if(!json.ok){ showErr(json.error||'Erro API'); throw new Error(json.error||'Erro'); } return json; }
+    let usedT = 0, usedN = 0;
+    // conta por RESERVA, não por slot — evita dupla contagem quando a reserva cruza 2 blocos
+    reservations.forEach(r=>{
+      if (r.date !== ymd) return;
+      const overlaps = r.slots && r.slots.some(s=>{
+        const a = toMin(s.start), b = toMin(s.end);
+        return Math.max(s0, a) < Math.min(e0, b);
+      });
+      if (overlaps) {
+        if (r.resource === 'tablets') usedT += r.qty; else usedN += r.qty;
+      }
+    });
+
+    return {
+      tablets: Math.max(0, totals.tablets - usedT),
+      notebooks: Math.max(0, totals.notebooks - usedN)
+    };
+  }
+
+  function checkConflicts(dayDate, slots, resource, qty){
+    const ymd = toYmd(dayDate);
+    const conflicts = [];
+
+    // Para cada NOVO slot, ver capacidade restante,
+    // SOMANDO reservas existentes uma única vez por reserva.
+    slots.forEach(ns=>{
+      const s0 = toMin(ns.start), e0 = toMin(ns.end);
+      let used = 0;
+
+      reservations.forEach(r=>{
+        if (r.date !== ymd) return;
+        if (r.resource !== resource) return;
+        const overlaps = r.slots && r.slots.some(s=>{
+          const a = toMin(s.start), b = toMin(s.end);
+          return Math.max(s0, a) < Math.min(e0, b);
+        });
+        if (overlaps) used += r.qty; // conta só 1x por reserva
+      });
+
+      const cap = (resource==='tablets') ? totals.tablets : totals.notebooks;
+      const left = cap - used;
+      if (qty > left) conflicts.push({ time:`${ns.start}–${ns.end}`, lack: qty - left });
+    });
+
+    return conflicts;
+  }
+
+  // ======= helpers =======
+  async function api(action,payload={}){
+    const body='data='+encodeURIComponent(JSON.stringify({action,...payload}));
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    const text=await res.text(); let json;
+    try{ json=JSON.parse(text);}catch(e){ showErr('Resposta inválida do servidor'); throw e; }
+    if(!json.ok){ showErr(json.error||'Erro API'); throw new Error(json.error||'Erro'); }
+    return json;
+  }
+
   async function refreshAll(){ const t=await api('getTotals'); totals=t.totals; const l=await api('list'); reservations=l.items||[]; renderCalendars(); }
   function populateStarts(){ const list=getStartsFor(fPeriod.value,fSegment.value); fStart.innerHTML=list.map(t=>`<option value="${t}">${t} – ${add45(t)}</option>`).join(''); }
   function getStartsFor(period,segment){ if(period==='tarde') return AFTERNOON_ALL.slice(); if(segment==='Infantil'||segment==='Fundamental 1') return MORNING_IF1.slice(); if(segment==='Fundamental 2'||segment==='Ensino Médio') return MORNING_F2M.slice(); return []; }
   function resetForm(){ conflictMsg.textContent=''; fDay.value='0'; fPeriod.value='manha'; fSegment.value='Infantil'; populateStarts(); fStart.value=getStartsFor('manha','Infantil')[0]; fSpan.value=1; fResource.value='tablets'; fQty.value=10; fTeacher.value=''; fClass.value=''; fNotes.value=''; }
   function fillFormDays(){ const days=getWeekDays(weekStart); fDay.innerHTML=days.map((d,i)=>`<option value="${i}">${weekdayName(d)} - ${toBr(d)}</option>`).join(''); }
 
-  // datas
   function startOfWeek(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); const day=x.getDay(); const diff=(day===0?-6:1-day); x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x; }
   function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
   function getWeekDays(start){ return [0,1,2,3,4].map(i=>addDays(start,i)); }
@@ -345,7 +406,13 @@
   function add45(hm){ return fromMin(toMin(hm)+45); }
   function clampInt(v,min,max){ v=parseInt(v,10); if(isNaN(v)) v=min; return Math.max(min, Math.min(max, v)); }
   function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+
+  function updateAdminUI(){
+    if (adminStatus) adminStatus.textContent = 'Modo admin: ' + (adminOn ? 'ligado' : 'desligado');
+    document.querySelectorAll('.calendar').forEach(el => el.classList.toggle('admin-on', adminOn));
+  }
 })();
 </script>
 </body>
 </html>
+
