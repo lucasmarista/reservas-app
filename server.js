@@ -1,78 +1,144 @@
 const path = require('path');
-const fs = require('fs');
 const express = require('express');
+const { Pool } = require('pg');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+const ADMIN_PASS = process.env.ADMIN_PASS || 'marista@2025'; // pode trocar via env na Render
 
-// Persistência: local usa ./data ; hospedagem pode usar DATA_DIR=/home/data
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
-const DATA_FILE = path.join(DATA_DIR, 'reservas.json');
+// Conexão Postgres (Render exige SSL)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-function ensureData(){
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, {recursive:true});
-  if (!fs.existsSync(DATA_FILE)){
-    fs.writeFileSync(DATA_FILE, JSON.stringify({
-      totals: { tablets: 247, notebooks: 150 },
-      reservations: []
-    }, null, 2));
+// Cria tabelas + seed de totais
+async function ensureSchema() {
+  await pool.query(`
+    create table if not exists totals (
+      id integer primary key default 1,
+      tablets integer not null,
+      notebooks integer not null
+    );
+  `);
+  await pool.query(`
+    create table if not exists reservations (
+      id text primary key,
+      date date not null,
+      period text not null,         -- 'manha' | 'tarde'
+      segment text not null,        -- 'Infantil' | 'Fundamental 1' | ...
+      resource text not null,       -- 'tablets' | 'notebooks'
+      qty integer not null,
+      teacher text not null,
+      turma text not null,
+      notes text,
+      slots jsonb not null          -- [{start:'07:15', end:'08:00'}, ...]
+    );
+  `);
+  const r = await pool.query(`select count(*)::int as c from totals where id=1`);
+  if (r.rows[0].c === 0) {
+    await pool.query(`insert into totals(id, tablets, notebooks) values (1, 247, 150)`);
   }
 }
-ensureData();
 
-function loadDB(){ return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); }
-function saveDB(db){ fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2)); }
-
-app.use(express.urlencoded({ extended: true })); // para application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API estilo simples: POST /api com body: data="<json-string>"
-app.post('/api', (req, res) => {
-  try{
+// API única: POST /api  (body: data="<json string>")
+app.post('/api', async (req, res) => {
+  try {
     const payload = JSON.parse(req.body.data || '{}');
     const action = payload.action;
-    const db = loadDB();
 
-    if (action === 'list')       return res.json({ ok:true, items: db.reservations });
-    if (action === 'getTotals')  return res.json({ ok:true, totals: db.totals });
+    if (action === 'getTotals') {
+      const r = await pool.query(`select tablets, notebooks from totals where id=1`);
+      return res.json({ ok: true, totals: r.rows[0] || { tablets:247, notebooks:150 } });
+    }
 
-    if (action === 'setTotals'){
+    if (action === 'setTotals') {
       const t = payload.tot || {};
-      db.totals.tablets   = Number.isFinite(+t.tablets)   ? +t.tablets   : db.totals.tablets;
-      db.totals.notebooks = Number.isFinite(+t.notebooks) ? +t.notebooks : db.totals.notebooks;
-      saveDB(db);
-      return res.json({ ok:true, totals: db.totals });
+      const tablets = Number.isFinite(+t.tablets) ? +t.tablets : 247;
+      const notebooks = Number.isFinite(+t.notebooks) ? +t.notebooks : 150;
+      await pool.query(`
+        insert into totals (id, tablets, notebooks)
+        values (1, $1, $2)
+        on conflict (id) do update set tablets = excluded.tablets, notebooks = excluded.notebooks
+      `, [tablets, notebooks]);
+      return res.json({ ok: true, totals: { tablets, notebooks } });
     }
 
-    if (action === 'save'){
-      const r = payload.rec || {};
-      r.id = 'r' + Math.random().toString(36).slice(2);
-      db.reservations.push(r);
-      saveDB(db);
-      return res.json({ ok:true, id: r.id });
+    if (action === 'list') {
+      const r = await pool.query(`
+        select id, to_char(date,'YYYY-MM-DD') as date, period, segment, resource, qty, teacher, turma, notes, slots
+        from reservations
+        order by date asc, period asc
+      `);
+      return res.json({ ok: true, items: r.rows });
     }
 
-    if (action === 'delete'){
+    if (action === 'save') {
+      const rec = payload.rec || {};
+      const id = 'r' + Math.random().toString(36).slice(2);
+      await pool.query(`
+        insert into reservations
+        (id, date, period, segment, resource, qty, teacher, turma, notes, slots)
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `, [
+        id,
+        rec.date, rec.period, rec.segment, rec.resource,
+        +rec.qty, rec.teacher || '', rec.turma || '', rec.notes || null,
+        JSON.stringify(rec.slots || [])
+      ]);
+      return res.json({ ok: true, id });
+    }
+
+    if (action === 'delete') {
+      // valida senha do mestre
+      if (ADMIN_PASS && (payload.admin !== ADMIN_PASS)) {
+        return res.status(403).json({ ok: false, error: 'Senha admin inválida' });
+      }
       const id = String(payload.id || '');
-      const before = db.reservations.length;
-      db.reservations = db.reservations.filter(x => String(x.id) !== id);
-      saveDB(db);
-      return res.json({ ok:true, deleted: before - db.reservations.length });
+      const r = await pool.query(`delete from reservations where id=$1`, [id]);
+      return res.json({ ok: true, deleted: r.rowCount });
     }
 
-    if (action === 'import'){
+    if (action === 'import') {
       const d = payload.data || {};
-      if (d.totals) db.totals = d.totals;
-      if (Array.isArray(d.reservations)) db.reservations = d.reservations;
-      saveDB(db);
-      return res.json({ ok:true });
+      if (d.totals && Number.isFinite(+d.totals.tablets) && Number.isFinite(+d.totals.notebooks)) {
+        await pool.query(`
+          insert into totals (id, tablets, notebooks)
+          values (1, $1, $2)
+          on conflict (id) do update set tablets = excluded.tablets, notebooks = excluded.notebooks
+        `, [ +d.totals.tablets, +d.totals.notebooks ]);
+      }
+      if (Array.isArray(d.reservations)) {
+        await pool.query('delete from reservations');
+        for (const r of d.reservations) {
+          const id = r.id || ('r' + Math.random().toString(36).slice(2));
+          await pool.query(`
+            insert into reservations
+            (id, date, period, segment, resource, qty, teacher, turma, notes, slots)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          `, [
+            id,
+            r.date, r.period, r.segment, r.resource,
+            +r.qty, r.teacher || '', r.turma || '', r.notes || null,
+            JSON.stringify(r.slots || [])
+          ]);
+        }
+      }
+      return res.json({ ok: true });
     }
 
-    return res.status(400).json({ ok:false, error: 'Ação inválida' });
-  }catch(e){
+    return res.status(400).json({ ok: false, error: 'Ação inválida' });
+  } catch (e) {
     console.error(e);
-    return res.status(500).json({ ok:false, error: String(e) });
+    return res.status(500).json({ ok: false, error: String(e) });
   }
 });
 
-app.listen(PORT, () => console.log(`✅ Servidor em http://localhost:${PORT}`));
+ensureSchema()
+  .then(() => app.listen(PORT, () => console.log(`✅ Servidor em http://localhost:${PORT}`)))
+  .catch(err => { console.error('Erro ao iniciar esquema:', err); process.exit(1); });
+
