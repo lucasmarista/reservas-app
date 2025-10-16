@@ -1,156 +1,10 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Marista Arquidiocesano – Reservas</title>
-<style>
-  :root{--bg:#f5f7fb;--fg:#1f2937;--muted:#6b7280;--card:#fff;--accent:#2563eb;--danger:#ef4444;--grid:#e5e7eb;--pill:#eef2ff;--shadow:0 6px 20px rgba(0,0,0,.08)}
-  *{box-sizing:border-box} html,body{height:100%} body{margin:0;font:16px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--fg)}
-  .container{max-width:1200px;margin:24px auto;padding:0 16px}
-  header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .title{display:flex;gap:12px;align-items:center} .title h1{font-size:22px;margin:0}
-  .badge{font-size:12px;background:var(--pill);color:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid #dbe3ff}
-  .panel{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px}
-  .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
-  .left,.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  button{appearance:none;border:1px solid #d1d5db;background:#fff;color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600}
-  button:hover{background:#f8fafc}
-  .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .chip{display:inline-flex;gap:6px;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;font-weight:600}
-  input[type=date]{padding:8px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
-  .calendar{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}
-  .calendar th,.calendar td{border:1px solid var(--grid);vertical-align:top}
-  .calendar th{background:#f3f4f6;padding:10px;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
-  .calendar td{background:#fff;min-width:150px;height:88px;padding:6px;position:relative}
-  .time-col{width:240px;min-width:240px;background:#fafafa}
-  .time-col .slot-label{font-weight:700;font-size:13px}
-  .intervalo{background:linear-gradient(135deg,#fef3c7 0%,#fff7ed 100%)}
-  .reservation{background:#eef2ff;border:1px solid #dbe3ff;padding:6px 8px;border-radius:10px;margin-bottom:6px;font-size:13px;display:flex;gap:6px;align-items:center}
-  .reservation .qty{font-weight:800}
-  .reservation .meta{color:#6b7280}
-  .reservation .del{margin-left:auto;opacity:.7;cursor:pointer;display:none}
-  .admin-on .reservation .del{display:inline}
-  .small{font-size:12px;color:#6b7280}
-  .grid-section{margin-top:16px}
-  .section-title{margin:8px 0 6px;color:#374151;font-size:14px;font-weight:800}
-  dialog{border:none;border-radius:16px;box-shadow:var(--shadow);width:min(680px,92vw)}
-  dialog::backdrop{background:rgba(0,0,0,.25)}
-  .modal-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:12px 16px}
-  .modal-body{padding:16px}
-  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-  .col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-3{grid-column:span 3}.col-12{grid-column:span 12}
-  label{font-size:12px;color:#374151;font-weight:700;display:block;margin-bottom:4px}
-  input[type=text],input[type=number],select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
-  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap}
-  .admin-toggle{display:flex;gap:8px;align-items:center}
-  .hint{background:#ecfeff;border:1px solid #bae6fd;color:#075985;padding:10px 12px;border-radius:12px;font-size:13px;margin-bottom:10px}
-  @media (max-width:900px){.time-col{position:sticky;left:0;z-index:2}.calendar{display:block;overflow:auto}.calendar table{min-width:900px}}
-  #jsError{display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;font-size:13px}
-  #jsError.show{display:block}
-</style>
-</head>
-<body>
-<div class="container" id="app">
-  <header>
-    <div class="title">
-      <h1>Marista Arquidiocesano – Tablets, Notebooks e Salas</h1>
-      <span class="badge">Aulas de 45 min</span>
-    </div>
-    <div class="resource">
-      <span class="chip">📱 Internet: <strong id="totTI">0</strong></span>
-      <span class="chip">📱 Geral: <strong id="totTG">0</strong></span>
-      <span class="chip">💻 Notes: <strong id="totN">0</strong></span>
-      <span class="chip">🧪 Lab Tec: <strong id="totLT">0</strong></span>
-      <span class="chip">🛠️ Maker: <strong id="totSM">0</strong></span>
-      <button class="btn-accent" id="btnNew">+ Nova reserva</button>
-    </div>
-  </header>
-
-  <div class="panel">
-    <div id="jsError">Houve um erro ao carregar a grade.</div>
-
-    <div class="toolbar">
-      <div class="left">
-        <button id="prevWeek">◀ Semana</button>
-        <button id="thisWeek">Hoje</button>
-        <button id="nextWeek">Semana ▶</button>
-        <input type="date" id="datePicker"/>
-      </div>
-      <div class="right">
-        <button id="btnExport">Exportar</button>
-        <label class="btn" for="importFile">Importar</label>
-        <input id="importFile" type="file" accept="application/json" style="display:none"/>
-      </div>
-    </div>
-
-    <div class="hint">Escolha o <b>segmento</b> e reserve <b>várias aulas seguidas</b>. Contagem evita “dobrar” quando a reserva cruza dois blocos.</div>
-
-    <div class="grid-section">
-      <div class="section-title">Manhã</div>
-      <div class="calendar" id="calMorning"></div>
-    </div>
-    <div class="grid-section">
-      <div class="section-title">Tarde</div>
-      <div class="calendar" id="calAfternoon"></div>
-    </div>
-
-    <div class="foot">
-      <div class="legend small">
-        Disponibilidade por célula: 📱Int / 📱Ger / 💻 / 🧪 / 🛠️
-      </div>
-      <div class="admin-toggle">
-        <input type="password" id="adminPass" placeholder="Senha admin"/>
-        <button id="btnAdmin">Ativar admin</button>
-        <span class="small" id="adminStatus">Modo admin: desligado</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal -->
-<dialog id="dlg">
-  <div class="modal-head"><strong>Nova reserva</strong><button onclick="dlg.close()">✖</button></div>
-  <form id="frm" class="modal-body">
-    <div class="grid">
-      <div class="col-4"><label>Dia</label><select id="fDay" required></select></div>
-      <div class="col-4"><label>Período</label>
-        <select id="fPeriod" required><option value="manha">Manhã</option><option value="tarde">Tarde</option></select>
-      </div>
-      <div class="col-4"><label>Segmento</label>
-        <select id="fSegment" required>
-          <option>Infantil</option><option>Fundamental 1</option>
-          <option>Fundamental 2</option><option>Ensino Médio</option>
-        </select>
-      </div>
-      <div class="col-6"><label>Início</label><select id="fStart" required></select></div>
-      <div class="col-3"><label>Duração (aulas)</label><input type="number" id="fSpan" min="1" max="6" value="1"/></div>
-      <div class="col-3"><label>Recurso</label>
-        <select id="fResource" required>
-          <option value="ipads_internet">iPads – Internet</option>
-          <option value="ipads_geral">iPads – Geral</option>
-          <option value="notebooks">Notebooks</option>
-          <option value="lab_tec">Lab Tec</option>
-          <option value="sala_maker">Sala Maker</option>
-        </select>
-      </div>
-      <div class="col-3"><label>Quantidade</label><input type="number" id="fQty" min="1" value="10" required/></div>
-      <div class="col-9"><label>Professor(a)</label><input type="text" id="fTeacher" required/></div>
-      <div class="col-6"><label>Turma</label><input type="text" id="fClass" required/></div>
-      <div class="col-6"><label>Observações</label><input type="text" id="fNotes"/></div>
-      <div class="col-12 small" id="conflictMsg"></div>
-    </div>
-    <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px">
-      <button type="button" onclick="dlg.close()">Cancelar</button>
-      <button type="submit" class="btn-accent">Salvar reserva</button>
-    </div>
-  </form>
-</dialog>
-
 <script>
 (function(){
   const API_URL='/api';
   const REFRESH_MS=10000;
+
+  // 👉 SENHA FIXA DO MODO ADMIN
+  const ADMIN_PASSWORD = 'marista@2025';
 
   const errBanner=document.getElementById('jsError');
   const showErr=m=>{ if(errBanner){errBanner.textContent=m||'Erro'; errBanner.classList.add('show');} };
@@ -273,12 +127,20 @@
     e.target.value='';
   });
 
+  // ✅ handler do botão Admin com verificação de senha
   btnAdmin.addEventListener('click', ()=>{
     if(!adminOn){
       const v=(adminPassInput.value||'').trim();
-      if(!v){ alert('Digite a senha admin.'); return; }
+      if (v !== ADMIN_PASSWORD) {
+        alert('Senha incorreta.');
+        adminOn=false; adminPassVal='';
+        updateAdminUI();
+        return;
+      }
+      // senha OK
       adminPassVal=v; adminOn=true;
     }else{
+      // desligar
       adminOn=false; adminPassVal=''; adminPassInput.value='';
     }
     updateAdminUI(); renderCalendars();
@@ -475,5 +337,3 @@
   }
 })();
 </script>
-</body>
-</html>
