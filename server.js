@@ -1,43 +1,92 @@
+// server.js
 const path = require('path');
 const express = require('express');
 const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASS = process.env.ADMIN_PASS || 'marista@2025'; // pode trocar via env na Render
 
-// Conexão Postgres (Render exige SSL)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-// Cria tabelas + seed de totais
+// Defaults de capacidade
+const DEFAULT_TOTALS = {
+  ipads_internet: 25,
+  ipads_geral: 222,
+  notebooks: 150,
+  lab_tec: 1,
+  sala_maker: 1
+};
+
 async function ensureSchema() {
+  // Tabela de totais
   await pool.query(`
     create table if not exists totals (
       id integer primary key default 1,
-      tablets integer not null,
-      notebooks integer not null
+      ipads_internet integer,
+      ipads_geral integer,
+      notebooks integer,
+      lab_tec integer,
+      sala_maker integer
     );
   `);
+  // Garante colunas (idempotente)
+  await pool.query(`alter table totals add column if not exists ipads_internet integer;`);
+  await pool.query(`alter table totals add column if not exists ipads_geral integer;`);
+  await pool.query(`alter table totals add column if not exists notebooks integer;`);
+  await pool.query(`alter table totals add column if not exists lab_tec integer;`);
+  await pool.query(`alter table totals add column if not exists sala_maker integer;`);
+
+  // Tabela de reservas
   await pool.query(`
     create table if not exists reservations (
       id text primary key,
       date date not null,
-      period text not null,         -- 'manha' | 'tarde'
-      segment text not null,        -- 'Infantil' | 'Fundamental 1' | ...
-      resource text not null,       -- 'tablets' | 'notebooks'
+      period text not null,
+      segment text not null,
+      resource text not null,
       qty integer not null,
       teacher text not null,
       turma text not null,
       notes text,
-      slots jsonb not null          -- [{start:'07:15', end:'08:00'}, ...]
+      slots jsonb not null
     );
   `);
+
+  // Semeia defaults se necessário
   const r = await pool.query(`select count(*)::int as c from totals where id=1`);
   if (r.rows[0].c === 0) {
-    await pool.query(`insert into totals(id, tablets, notebooks) values (1, 247, 150)`);
+    await pool.query(
+      `insert into totals(id, ipads_internet, ipads_geral, notebooks, lab_tec, sala_maker)
+       values (1, $1, $2, $3, $4, $5)`,
+      [
+        DEFAULT_TOTALS.ipads_internet,
+        DEFAULT_TOTALS.ipads_geral,
+        DEFAULT_TOTALS.notebooks,
+        DEFAULT_TOTALS.lab_tec,
+        DEFAULT_TOTALS.sala_maker
+      ]
+    );
+  } else {
+    // Preenche nulos que possam ter ficado ao evoluir o schema
+    await pool.query(
+      `update totals set
+        ipads_internet = coalesce(ipads_internet, $1),
+        ipads_geral    = coalesce(ipads_geral,    $2),
+        notebooks      = coalesce(notebooks,      $3),
+        lab_tec        = coalesce(lab_tec,        $4),
+        sala_maker     = coalesce(sala_maker,     $5)
+       where id=1`,
+      [
+        DEFAULT_TOTALS.ipads_internet,
+        DEFAULT_TOTALS.ipads_geral,
+        DEFAULT_TOTALS.notebooks,
+        DEFAULT_TOTALS.lab_tec,
+        DEFAULT_TOTALS.sala_maker
+      ]
+    );
   }
 }
 
@@ -45,27 +94,59 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API única: POST /api  (body: data="<json string>")
+// Helpers
+async function readTotals() {
+  const r = await pool.query(
+    `select ipads_internet, ipads_geral, notebooks, lab_tec, sala_maker from totals where id=1`
+  );
+  const t = r.rows[0] || {};
+  return {
+    ipads_internet: t.ipads_internet ?? DEFAULT_TOTALS.ipads_internet,
+    ipads_geral: t.ipads_geral ?? DEFAULT_TOTALS.ipads_geral,
+    notebooks: t.notebooks ?? DEFAULT_TOTALS.notebooks,
+    lab_tec: t.lab_tec ?? DEFAULT_TOTALS.lab_tec,
+    sala_maker: t.sala_maker ?? DEFAULT_TOTALS.sala_maker
+  };
+}
+
+async function writeTotals(partial) {
+  const cur = await readTotals();
+  const next = {
+    ipads_internet: Number.isFinite(+partial.ipads_internet) ? +partial.ipads_internet : cur.ipads_internet,
+    ipads_geral: Number.isFinite(+partial.ipads_geral) ? +partial.ipads_geral : cur.ipads_geral,
+    notebooks: Number.isFinite(+partial.notebooks) ? +partial.notebooks : cur.notebooks,
+    lab_tec: Number.isFinite(+partial.lab_tec) ? +partial.lab_tec : cur.lab_tec,
+    sala_maker: Number.isFinite(+partial.sala_maker) ? +partial.sala_maker : cur.sala_maker
+  };
+
+  await pool.query(
+    `insert into totals (id, ipads_internet, ipads_geral, notebooks, lab_tec, sala_maker)
+     values (1, $1, $2, $3, $4, $5)
+     on conflict (id) do update set
+       ipads_internet = excluded.ipads_internet,
+       ipads_geral    = excluded.ipads_geral,
+       notebooks      = excluded.notebooks,
+       lab_tec        = excluded.lab_tec,
+       sala_maker     = excluded.sala_maker`,
+    [next.ipads_internet, next.ipads_geral, next.notebooks, next.lab_tec, next.sala_maker]
+  );
+  return next;
+}
+
+// API
 app.post('/api', async (req, res) => {
   try {
     const payload = JSON.parse(req.body.data || '{}');
     const action = payload.action;
 
     if (action === 'getTotals') {
-      const r = await pool.query(`select tablets, notebooks from totals where id=1`);
-      return res.json({ ok: true, totals: r.rows[0] || { tablets:247, notebooks:150 } });
+      const totals = await readTotals();
+      return res.json({ ok: true, totals });
     }
 
     if (action === 'setTotals') {
-      const t = payload.tot || {};
-      const tablets = Number.isFinite(+t.tablets) ? +t.tablets : 247;
-      const notebooks = Number.isFinite(+t.notebooks) ? +t.notebooks : 150;
-      await pool.query(`
-        insert into totals (id, tablets, notebooks)
-        values (1, $1, $2)
-        on conflict (id) do update set tablets = excluded.tablets, notebooks = excluded.notebooks
-      `, [tablets, notebooks]);
-      return res.json({ ok: true, totals: { tablets, notebooks } });
+      const next = await writeTotals(payload.tot || {});
+      return res.json({ ok: true, totals: next });
     }
 
     if (action === 'list') {
@@ -94,10 +175,6 @@ app.post('/api', async (req, res) => {
     }
 
     if (action === 'delete') {
-      // valida senha do mestre
-      if (ADMIN_PASS && (payload.admin !== ADMIN_PASS)) {
-        return res.status(403).json({ ok: false, error: 'Senha admin inválida' });
-      }
       const id = String(payload.id || '');
       const r = await pool.query(`delete from reservations where id=$1`, [id]);
       return res.json({ ok: true, deleted: r.rowCount });
@@ -105,12 +182,8 @@ app.post('/api', async (req, res) => {
 
     if (action === 'import') {
       const d = payload.data || {};
-      if (d.totals && Number.isFinite(+d.totals.tablets) && Number.isFinite(+d.totals.notebooks)) {
-        await pool.query(`
-          insert into totals (id, tablets, notebooks)
-          values (1, $1, $2)
-          on conflict (id) do update set tablets = excluded.tablets, notebooks = excluded.notebooks
-        `, [ +d.totals.tablets, +d.totals.notebooks ]);
+      if (d.totals) {
+        await writeTotals(d.totals);
       }
       if (Array.isArray(d.reservations)) {
         await pool.query('delete from reservations');
@@ -141,4 +214,3 @@ app.post('/api', async (req, res) => {
 ensureSchema()
   .then(() => app.listen(PORT, () => console.log(`✅ Servidor em http://localhost:${PORT}`)))
   .catch(err => { console.error('Erro ao iniciar esquema:', err); process.exit(1); });
-
