@@ -75,7 +75,6 @@
       <div class="resource" style="display:flex;gap:8px;flex-wrap:wrap">
         <span class="chip">📱 iPads Internet: <strong id="totTI">0</strong></span>
         <span class="chip">📱 iPads Geral: <strong id="totTG">0</strong></span>
-        <span class="chip">💻 Notebooks: <strong id="totN">0</strong></span>
         <span class="chip">🧪 Lab Tec: <strong id="totLT">0</strong></span>
         <span class="chip">🛠️ Sala Maker: <strong id="totSM">0</strong></span>
         <button class="btn-accent" id="btnNew">+ Nova reserva</button>
@@ -102,6 +101,7 @@
 
       <div class="hint">
         Professores escolhem o <b>segmento</b> e podem reservar <b>várias aulas seguidas</b>.
+        iPads separados em <b>Internet (25)</b> e <b>Geral (222)</b>. <b>Lab Tec</b> e <b>Sala Maker</b> são exclusivos (1 por horário).
       </div>
 
       <div class="grid-section">
@@ -117,7 +117,6 @@
         <div class="legend">
           <span class="chip">📱 iPads Internet</span>
           <span class="chip">📱 iPads Geral</span>
-          <span class="chip">💻 Notebooks</span>
           <span class="chip">🧪 Lab Tec</span>
           <span class="chip">🛠️ Sala Maker</span>
         </div>
@@ -170,7 +169,6 @@
           <select id="fResource" required>
             <option value="ipads_internet">iPads Internet</option>
             <option value="ipads_geral">iPads Geral</option>
-            <option value="notebooks">Notebooks</option>
             <option value="lab_tec">Lab Tec</option>
             <option value="sala_maker">Sala Maker</option>
           </select>
@@ -204,7 +202,6 @@
 (function(){
   const API_URL = '/api';
   const REFRESH_MS = 10000;
-  // 👉 senha fixa do modo admin
   const ADMIN_PASSWORD = 'marista@2025';
 
   const errBanner = document.getElementById('jsError');
@@ -245,7 +242,6 @@
   let totals = {             // defaults locais (serão sobrescritos pelo servidor)
     tablets_internet: 25,
     tablets_geral: 222,
-    notebooks: 150,
     lab_tec: 1,
     sala_maker: 1
   };
@@ -262,7 +258,6 @@
 
   const totTI = document.getElementById('totTI');
   const totTG = document.getElementById('totTG');
-  const totN  = document.getElementById('totN');
   const totLT = document.getElementById('totLT');
   const totSM = document.getElementById('totSM');
 
@@ -393,7 +388,6 @@
   function renderCalendars(){
     totTI.textContent = totals.tablets_internet ?? 0;
     totTG.textContent = totals.tablets_geral ?? 0;
-    totN.textContent  = totals.notebooks ?? 0;
     totLT.textContent = totals.lab_tec ?? 0;
     totSM.textContent = totals.sala_maker ?? 0;
 
@@ -442,7 +436,7 @@
 
         const av=availabilityAt(d,row.start);
         const p=document.createElement('div'); p.className='small';
-        p.textContent=`Disp.: ${av.ipads_internet} iPads Int / ${av.ipads_geral} iPads Ger / ${av.notebooks} Notes / ${av.lab_tec} LabTec / ${av.sala_maker} Maker`;
+        p.textContent=`Disp.: ${av.ipads_internet} iPads Int / ${av.ipads_geral} iPads Ger / ${av.lab_tec} LabTec / ${av.sala_maker} Maker`;
         td.appendChild(p);
 
         td.addEventListener('click', ()=>{
@@ -461,7 +455,7 @@
   // ======= disponibilidade & conflitos (sem dupla contagem) =======
   function availabilityAt(dateObj,startHHMM){
     const ymd=toYmd(dateObj); const s0=toMin(startHHMM), e0=s0+45;
-    const used={ ipads_internet:0, ipads_geral:0, notebooks:0, lab_tec:0, sala_maker:0 };
+    const used={ ipads_internet:0, ipads_geral:0, lab_tec:0, sala_maker:0 };
 
     reservations.forEach(r=>{
       if(r.date!==ymd) return;
@@ -475,7 +469,6 @@
     return {
       ipads_internet: Math.max(0, (totals.tablets_internet||0) - (used.ipads_internet||0)),
       ipads_geral:    Math.max(0, (totals.tablets_geral||0)    - (used.ipads_geral||0)),
-      notebooks:      Math.max(0, (totals.notebooks||0)        - (used.notebooks||0)),
       lab_tec:        Math.max(0, (totals.lab_tec||0)          - (used.lab_tec||0)),
       sala_maker:     Math.max(0, (totals.sala_maker||0)       - (used.sala_maker||0)),
     };
@@ -512,11 +505,9 @@
 
   async function refreshAll(){
     const t=await api('getTotals');
-    // aceita tanto o formato novo quanto um eventual formato antigo
     const tt=t.totals||{};
     if ('tablets_internet' in tt) totals.tablets_internet = tt.tablets_internet;
     if ('tablets_geral'    in tt) totals.tablets_geral    = tt.tablets_geral;
-    if ('notebooks'        in tt) totals.notebooks        = tt.notebooks;
     if ('lab_tec'          in tt) totals.lab_tec          = tt.lab_tec;
     if ('sala_maker'       in tt) totals.sala_maker       = tt.sala_maker;
 
@@ -565,7 +556,6 @@
   function capFor(res){
     if(res==='ipads_internet') return totals.tablets_internet||0;
     if(res==='ipads_geral')    return totals.tablets_geral||0;
-    if(res==='notebooks')      return totals.notebooks||0;
     if(res==='lab_tec')        return totals.lab_tec||0;
     if(res==='sala_maker')     return totals.sala_maker||0;
     return 0;
@@ -573,7 +563,6 @@
   function resLabel(res){
     return res==='ipads_internet'?'📱 iPads Internet'
         : res==='ipads_geral'   ?'📱 iPads Geral'
-        : res==='notebooks'     ?'💻 Notebooks'
         : res==='lab_tec'       ?'🧪 Lab Tec'
         : res==='sala_maker'    ?'🛠️ Sala Maker'
         : res;
@@ -586,4 +575,3 @@
 </script>
 </body>
 </html>
-
