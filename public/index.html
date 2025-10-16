@@ -13,7 +13,7 @@
     .badge{font-size:12px;background:var(--pill);color:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid #dbe3ff}
     .panel{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px}
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .left, .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .left,.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     button{appearance:none;border:1px solid #d1d5db;background:#fff;color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600}
     button:hover{background:#f8fafc}
     .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -243,7 +243,7 @@
   setInterval(refreshAll, REFRESH_MS);
   updateAdminUI();
 
-  // eventos
+  // --- eventos ---
   btnNew.addEventListener('click', ()=>{ resetForm(); dlg.showModal(); });
 
   // navegação de semanas
@@ -251,6 +251,16 @@
   nextWeek.addEventListener('click', ()=>{ weekStart = addDays(weekStart, 7); fillFormDays(); renderCalendars(); });
   thisWeek.addEventListener('click', ()=>{ weekStart = startOfWeek(new Date()); datePicker.value = toYmd(new Date()); fillFormDays(); renderCalendars(); });
   datePicker.addEventListener('change', (e)=>{ const d=new Date(e.target.value+'T00:00'); if(!isNaN(d)) { weekStart = startOfWeek(d); fillFormDays(); renderCalendars(); } });
+
+  // quando mudar Período ou Segmento, recarrega opções de Início
+  function populateStartsAndKeepSafe() {
+    const prev = fStart.value;
+    populateStarts();
+    if ([...fStart.options].some(o => o.value === prev)) fStart.value = prev;
+    else if (fStart.options.length > 0) fStart.selectedIndex = 0;
+  }
+  fPeriod.addEventListener('change', populateStartsAndKeepSafe);
+  fSegment.addEventListener('change', populateStartsAndKeepSafe);
 
   btnExport.addEventListener('click', ()=>{
     const blob = new Blob([JSON.stringify({ totals, reservations }, null, 2)], {type:'application/json'});
@@ -360,7 +370,14 @@
         const p=document.createElement('div'); p.className='small'; p.textContent=`Disp.: ${available.tablets}📱 / ${available.notebooks}💻`;
         td.appendChild(p);
 
-        td.addEventListener('click',()=>{ resetForm(); fDay.value=String(c); fPeriod.value=period; populateStarts(); fStart.value=row.start; dlg.showModal(); });
+        td.addEventListener('click',()=>{
+          resetForm();
+          fDay.value=String(c);
+          fPeriod.value=period;
+          populateStarts();          // monta opções para o período/segmento atual
+          fStart.value=row.start;    // seleciona o horário da célula
+          dlg.showModal();
+        });
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
@@ -444,7 +461,7 @@
   function fromMin(min){ const h=Math.floor(min/60), m=min%60; return `${('0'+h).slice(-2)}:${('0'+m).slice(-2)}`; }
   function add45(hm){ return fromMin(toMin(hm)+45); }
   function clampInt(v,min,max){ v=parseInt(v,10); if(isNaN(v)) v=min; return Math.max(min, Math.min(max, v)); }
-  function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+  function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","</": "&lt;/","»":"&raquo;","\"":"&quot;","'":"&#39;"}[c]||c)); }
 
   function updateAdminUI(){
     if (adminStatus) adminStatus.textContent = 'Modo admin: ' + (adminOn ? 'ligado' : 'desligado');
