@@ -1,173 +1,165 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Marista Arquidiocesano - Tablets e Notebooks</title>
-  <style>
-    :root{ --bg:#f5f7fb; --fg:#1f2937; --muted:#6b7280; --card:#ffffff; --accent:#2563eb; --danger:#ef4444; --grid:#e5e7eb; --pill:#eef2ff; --shadow:0 6px 20px rgba(0,0,0,.08);}
-    *{box-sizing:border-box} html,body{height:100%} body{margin:0;font:16px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--fg)}
-    .container{max-width:1200px;margin:24px auto;padding:0 16px}
-    header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}
-    .title{display:flex;gap:12px;align-items:center} .title h1{font-size:22px;margin:0}
-    .badge{font-size:12px;background:var(--pill);color:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid #dbe3ff}
-    .panel{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px}
-    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .left,.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    button{appearance:none;border:1px solid #d1d5db;background:#fff;color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600}
-    button:hover{background:#f8fafc}
-    .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
-    .chip{display:inline-flex;gap:6px;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;font-weight:600}
-    input[type=date]{padding:8px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
-
-    .calendar{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}
-    .calendar th,.calendar td{border:1px solid var(--grid);vertical-align:top}
-    .calendar th{background:#f3f4f6;padding:10px;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
-    .calendar td{background:#fff;min-width:150px;height:72px;padding:6px;position:relative}
-    .time-col{width:220px;min-width:220px;background:#fafafa}
-    .time-col .slot-label{font-weight:700;font-size:13px}
-    .intervalo{background:linear-gradient(135deg,#fef3c7 0%,#fff7ed 100%)}
-
-    .reservation{background:#eef2ff;border:1px solid #dbe3ff;padding:6px 8px;border-radius:10px;margin-bottom:6px;font-size:13px;display:flex;gap:6px;align-items:center}
-    .reservation .qty{font-weight:800}
-    .reservation .type.tablet{color:#4338ca}
-    .reservation .type.note{color:#0ea5e9}
-    .reservation .meta{color:#6b7280}
-    .reservation .del{margin-left:auto;opacity:.7;cursor:pointer;display:none}
-    .admin-on .reservation .del{display:inline}
-
-    .small{font-size:12px;color:#6b7280}
-    .grid-section{margin-top:16px}
-    .section-title{margin:8px 0 6px;color:#374151;font-size:14px;font-weight:800}
-
-    dialog{border:none;border-radius:16px;box-shadow:var(--shadow);width:min(680px,92vw)}
-    dialog::backdrop{background:rgba(0,0,0,.25)}
-    .modal-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:12px 16px}
-    .modal-body{padding:16px}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-    .col-6{grid-column:span 6} .col-4{grid-column:span 4} .col-3{grid-column:span 3} .col-12{grid-column:span 12}
-    label{font-size:12px;color:#374151;font-weight:700;display:block;margin-bottom:4px}
-    input[type=text], input[type=number], select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
-
-    .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap}
-    .admin-toggle{display:flex;gap:8px;align-items:center}
-    .hint{background:#ecfeff;border:1px solid #bae6fd;color:#075985;padding:10px 12px;border-radius:12px;font-size:13px;margin-bottom:10px}
-
-    @media (max-width:900px){ .time-col{position:sticky;left:0;z-index:2} .calendar{display:block;overflow:auto} .calendar table{min-width:900px}}
-    #jsError{display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;font-size:13px}
-    #jsError.show{display:block}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Marista Arquidiocesano – Reservas</title>
+<style>
+  :root{--bg:#f5f7fb;--fg:#1f2937;--muted:#6b7280;--card:#fff;--accent:#2563eb;--danger:#ef4444;--grid:#e5e7eb;--pill:#eef2ff;--shadow:0 6px 20px rgba(0,0,0,.08)}
+  *{box-sizing:border-box} html,body{height:100%} body{margin:0;font:16px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--fg)}
+  .container{max-width:1200px;margin:24px auto;padding:0 16px}
+  header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .title{display:flex;gap:12px;align-items:center} .title h1{font-size:22px;margin:0}
+  .badge{font-size:12px;background:var(--pill);color:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid #dbe3ff}
+  .panel{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px}
+  .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+  .left,.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{appearance:none;border:1px solid #d1d5db;background:#fff;color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:600}
+  button:hover{background:#f8fafc}
+  .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .chip{display:inline-flex;gap:6px;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;font-weight:600}
+  input[type=date]{padding:8px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+  .calendar{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}
+  .calendar th,.calendar td{border:1px solid var(--grid);vertical-align:top}
+  .calendar th{background:#f3f4f6;padding:10px;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
+  .calendar td{background:#fff;min-width:150px;height:88px;padding:6px;position:relative}
+  .time-col{width:240px;min-width:240px;background:#fafafa}
+  .time-col .slot-label{font-weight:700;font-size:13px}
+  .intervalo{background:linear-gradient(135deg,#fef3c7 0%,#fff7ed 100%)}
+  .reservation{background:#eef2ff;border:1px solid #dbe3ff;padding:6px 8px;border-radius:10px;margin-bottom:6px;font-size:13px;display:flex;gap:6px;align-items:center}
+  .reservation .qty{font-weight:800}
+  .reservation .meta{color:#6b7280}
+  .reservation .del{margin-left:auto;opacity:.7;cursor:pointer;display:none}
+  .admin-on .reservation .del{display:inline}
+  .small{font-size:12px;color:#6b7280}
+  .grid-section{margin-top:16px}
+  .section-title{margin:8px 0 6px;color:#374151;font-size:14px;font-weight:800}
+  dialog{border:none;border-radius:16px;box-shadow:var(--shadow);width:min(680px,92vw)}
+  dialog::backdrop{background:rgba(0,0,0,.25)}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:12px 16px}
+  .modal-body{padding:16px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+  .col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-3{grid-column:span 3}.col-12{grid-column:span 12}
+  label{font-size:12px;color:#374151;font-weight:700;display:block;margin-bottom:4px}
+  input[type=text],input[type=number],select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap}
+  .admin-toggle{display:flex;gap:8px;align-items:center}
+  .hint{background:#ecfeff;border:1px solid #bae6fd;color:#075985;padding:10px 12px;border-radius:12px;font-size:13px;margin-bottom:10px}
+  @media (max-width:900px){.time-col{position:sticky;left:0;z-index:2}.calendar{display:block;overflow:auto}.calendar table{min-width:900px}}
+  #jsError{display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;font-size:13px}
+  #jsError.show{display:block}
+</style>
 </head>
 <body>
-  <div class="container" id="app">
-    <header>
-      <div class="title">
-        <h1>Marista Arquidiocesano - Tablets e Notebooks</h1>
-        <span class="badge">Aulas de 45 min</span>
+<div class="container" id="app">
+  <header>
+    <div class="title">
+      <h1>Marista Arquidiocesano – Tablets, Notebooks e Salas</h1>
+      <span class="badge">Aulas de 45 min</span>
+    </div>
+    <div class="resource">
+      <span class="chip">📱 Internet: <strong id="totTI">0</strong></span>
+      <span class="chip">📱 Geral: <strong id="totTG">0</strong></span>
+      <span class="chip">💻 Notes: <strong id="totN">0</strong></span>
+      <span class="chip">🧪 Lab Tec: <strong id="totLT">0</strong></span>
+      <span class="chip">🛠️ Maker: <strong id="totSM">0</strong></span>
+      <button class="btn-accent" id="btnNew">+ Nova reserva</button>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div id="jsError">Houve um erro ao carregar a grade.</div>
+
+    <div class="toolbar">
+      <div class="left">
+        <button id="prevWeek">◀ Semana</button>
+        <button id="thisWeek">Hoje</button>
+        <button id="nextWeek">Semana ▶</button>
+        <input type="date" id="datePicker"/>
       </div>
-      <div class="resource">
-        <span class="chip">📱 <strong id="totTablets">0</strong> tablets</span>
-        <span class="chip">💻 <strong id="totNotes">0</strong> notebooks</span>
-        <button class="btn-accent" id="btnNew">+ Nova reserva</button>
+      <div class="right">
+        <button id="btnExport">Exportar</button>
+        <label class="btn" for="importFile">Importar</label>
+        <input id="importFile" type="file" accept="application/json" style="display:none"/>
       </div>
-    </header>
+    </div>
 
-    <div class="panel">
-      <div id="jsError">Houve um erro ao carregar a grade.</div>
+    <div class="hint">Escolha o <b>segmento</b> e reserve <b>várias aulas seguidas</b>. Contagem evita “dobrar” quando a reserva cruza dois blocos.</div>
 
-      <!-- NAV DA SEMANA -->
-      <div class="toolbar">
-        <div class="left">
-          <button id="prevWeek">◀ Semana</button>
-          <button id="thisWeek">Hoje</button>
-          <button id="nextWeek">Semana ▶</button>
-          <input type="date" id="datePicker" />
-        </div>
-        <div class="right">
-          <button id="btnExport">Exportar</button>
-          <label class="btn" for="importFile">Importar</label>
-          <input id="importFile" type="file" accept="application/json" style="display:none" />
-        </div>
+    <div class="grid-section">
+      <div class="section-title">Manhã</div>
+      <div class="calendar" id="calMorning"></div>
+    </div>
+    <div class="grid-section">
+      <div class="section-title">Tarde</div>
+      <div class="calendar" id="calAfternoon"></div>
+    </div>
+
+    <div class="foot">
+      <div class="legend small">
+        Disponibilidade por célula: 📱Int / 📱Ger / 💻 / 🧪 / 🛠️
       </div>
-
-      <div class="hint">Professores escolhem o segmento e podem reservar várias aulas seguidas.</div>
-
-      <div class="grid-section">
-        <div class="section-title">Manhã</div>
-        <div class="calendar" id="calMorning"></div>
-      </div>
-      <div class="grid-section">
-        <div class="section-title">Tarde</div>
-        <div class="calendar" id="calAfternoon"></div>
-      </div>
-
-      <div class="foot">
-        <div class="legend">
-          <span class="chip">📱 Tablets</span>
-          <span class="chip">💻 Notebooks</span>
-          <span class="chip">⏱ 45 min</span>
-        </div>
-
-        <!-- BLOCO ADMIN -->
-        <div class="admin-toggle">
-          <input type="password" id="adminPass" placeholder="Senha admin" />
-          <button id="btnAdmin">Ativar admin</button>
-          <span class="small" id="adminStatus">Modo admin: desligado</span>
-        </div>
+      <div class="admin-toggle">
+        <input type="password" id="adminPass" placeholder="Senha admin"/>
+        <button id="btnAdmin">Ativar admin</button>
+        <span class="small" id="adminStatus">Modo admin: desligado</span>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Modal Nova Reserva -->
-  <dialog id="dlg">
-    <div class="modal-head"><strong>Nova reserva</strong><button onclick="dlg.close()">✖</button></div>
-    <form id="frm" class="modal-body">
-      <div class="grid">
-        <div class="col-4"><label>Dia</label><select id="fDay" required></select></div>
-        <div class="col-4"><label>Período</label>
-          <select id="fPeriod" required>
-            <option value="manha">Manhã</option><option value="tarde">Tarde</option>
-          </select>
-        </div>
-        <div class="col-4"><label>Segmento</label>
-          <select id="fSegment" required>
-            <option>Infantil</option><option>Fundamental 1</option>
-            <option>Fundamental 2</option><option>Ensino Médio</option>
-          </select>
-        </div>
-        <div class="col-6"><label>Início</label><select id="fStart" required></select></div>
-        <div class="col-3"><label>Duração (aulas)</label><input type="number" id="fSpan" min="1" max="6" value="1" /></div>
-        <div class="col-3"><label>Recurso</label>
-          <select id="fResource" required>
-            <option value="tablets">Tablets</option><option value="notebooks">Notebooks</option>
-          </select>
-        </div>
-        <div class="col-3"><label>Quantidade</label><input type="number" id="fQty" min="1" value="10" required /></div>
-        <div class="col-9"><label>Professor(a)</label><input type="text" id="fTeacher" required /></div>
-        <div class="col-6"><label>Turma</label><input type="text" id="fClass" required /></div>
-        <div class="col-6"><label>Observações</label><input type="text" id="fNotes" /></div>
-        <div class="col-12 small" id="conflictMsg"></div>
+<!-- Modal -->
+<dialog id="dlg">
+  <div class="modal-head"><strong>Nova reserva</strong><button onclick="dlg.close()">✖</button></div>
+  <form id="frm" class="modal-body">
+    <div class="grid">
+      <div class="col-4"><label>Dia</label><select id="fDay" required></select></div>
+      <div class="col-4"><label>Período</label>
+        <select id="fPeriod" required><option value="manha">Manhã</option><option value="tarde">Tarde</option></select>
       </div>
-      <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px">
-        <button type="button" onclick="dlg.close()">Cancelar</button>
-        <button type="submit" class="btn-accent">Salvar reserva</button>
+      <div class="col-4"><label>Segmento</label>
+        <select id="fSegment" required>
+          <option>Infantil</option><option>Fundamental 1</option>
+          <option>Fundamental 2</option><option>Ensino Médio</option>
+        </select>
       </div>
-    </form>
-  </dialog>
+      <div class="col-6"><label>Início</label><select id="fStart" required></select></div>
+      <div class="col-3"><label>Duração (aulas)</label><input type="number" id="fSpan" min="1" max="6" value="1"/></div>
+      <div class="col-3"><label>Recurso</label>
+        <select id="fResource" required>
+          <option value="ipads_internet">iPads – Internet</option>
+          <option value="ipads_geral">iPads – Geral</option>
+          <option value="notebooks">Notebooks</option>
+          <option value="lab_tec">Lab Tec</option>
+          <option value="sala_maker">Sala Maker</option>
+        </select>
+      </div>
+      <div class="col-3"><label>Quantidade</label><input type="number" id="fQty" min="1" value="10" required/></div>
+      <div class="col-9"><label>Professor(a)</label><input type="text" id="fTeacher" required/></div>
+      <div class="col-6"><label>Turma</label><input type="text" id="fClass" required/></div>
+      <div class="col-6"><label>Observações</label><input type="text" id="fNotes"/></div>
+      <div class="col-12 small" id="conflictMsg"></div>
+    </div>
+    <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px">
+      <button type="button" onclick="dlg.close()">Cancelar</button>
+      <button type="submit" class="btn-accent">Salvar reserva</button>
+    </div>
+  </form>
+</dialog>
 
 <script>
 (function(){
-  const API_URL = '/api';
-  const REFRESH_MS = 10000;
+  const API_URL='/api';
+  const REFRESH_MS=10000;
 
-  const errBanner = document.getElementById('jsError');
-  const showErr = (m)=>{ if(errBanner){ errBanner.textContent=m||'Erro'; errBanner.classList.add('show'); } };
+  const errBanner=document.getElementById('jsError');
+  const showErr=m=>{ if(errBanner){errBanner.textContent=m||'Erro'; errBanner.classList.add('show');} };
 
-  // horários (45 min)
-  const MORNING_F2M = ['07:15','08:00','08:45','10:00','10:45','11:30','12:15'];
-  const MORNING_IF1 = ['07:30','08:15','09:00','10:15','11:00','11:45','12:30'];
-  const AFTERNOON_ALL = ['13:30','14:15','15:00','16:15','17:00'];
-  const MORNING_COMBINED = [
+  // horários
+  const MORNING_F2M=['07:15','08:00','08:45','10:00','10:45','11:30','12:15'];
+  const MORNING_IF1=['07:30','08:15','09:00','10:15','11:00','11:45','12:30'];
+  const AFTERNOON_ALL=['13:30','14:15','15:00','16:15','17:00'];
+  const MORNING_COMBINED=[
     {start:'07:15',label:'07:15–08:00 • Fund2/Médio'},
     {start:'07:30',label:'07:30–08:15 • Infantil/Fund1'},
     {start:'08:00',label:'08:00–08:45 • Fund2/Médio'},
@@ -184,90 +176,97 @@
     {start:'12:15',label:'12:15–13:00 • Fund2/Médio'},
     {start:'12:30',label:'12:30–13:15 • Infantil/Fund1'}
   ];
-  const AFTERNOON_COMBINED = [
-    {start:'13:30',label:'13:30–14:15 • Todos os segmentos'},
-    {start:'14:15',label:'14:15–15:00 • Todos os segmentos'},
-    {start:'15:00',label:'15:00–15:45 • Todos os segmentos'},
+  const AFTERNOON_COMBINED=[
+    {start:'13:30',label:'13:30–14:15 • Todos'},
+    {start:'14:15',label:'14:15–15:00 • Todos'},
+    {start:'15:00',label:'15:00–15:45 • Todos'},
     {intervalo:true,label:'INTERVALO'},
-    {start:'16:15',label:'16:15–17:00 • Todos os segmentos'},
-    {start:'17:00',label:'17:00–17:45 • Todos os segmentos'}
+    {start:'16:15',label:'16:15–17:00 • Todos'},
+    {start:'17:00',label:'17:00–17:45 • Todos'}
   ];
 
   // estado
-  let reservations = [];
-  let totals = { tablets: 247, notebooks: 150 };
-  const today = new Date();
-  let weekStart = startOfWeek(today);
+  let reservations=[];
+  let totals={ tablets_internet:25, tablets_geral:222, notebooks:150, lab_tec:1, sala_maker:1 };
+  const today=new Date();
+  let weekStart=startOfWeek(today);
 
   // DOM
-  const calMorning = document.getElementById('calMorning');
-  const calAfternoon = document.getElementById('calAfternoon');
-  const btnNew = document.getElementById('btnNew');
-  const btnExport = document.getElementById('btnExport');
-  const importFile = document.getElementById('importFile');
-  const totT = document.getElementById('totTablets');
-  const totN = document.getElementById('totNotes');
+  const calMorning=document.getElementById('calMorning');
+  const calAfternoon=document.getElementById('calAfternoon');
+  const btnNew=document.getElementById('btnNew');
+  const btnExport=document.getElementById('btnExport');
+  const importFile=document.getElementById('importFile');
+  const totTI=document.getElementById('totTI');
+  const totTG=document.getElementById('totTG');
+  const totN=document.getElementById('totN');
+  const totLT=document.getElementById('totLT');
+  const totSM=document.getElementById('totSM');
 
-  // nav semana
-  const prevWeek = document.getElementById('prevWeek');
-  const nextWeek = document.getElementById('nextWeek');
-  const thisWeek = document.getElementById('thisWeek');
-  const datePicker = document.getElementById('datePicker');
+  const prevWeek=document.getElementById('prevWeek');
+  const nextWeek=document.getElementById('nextWeek');
+  const thisWeek=document.getElementById('thisWeek');
+  const datePicker=document.getElementById('datePicker');
 
   // admin
-  const adminPassInput = document.getElementById('adminPass');
-  const btnAdmin = document.getElementById('btnAdmin');
-  const adminStatus = document.getElementById('adminStatus');
-  let adminOn = false;
-  let adminPassVal = '';
+  const adminPassInput=document.getElementById('adminPass');
+  const btnAdmin=document.getElementById('btnAdmin');
+  const adminStatus=document.getElementById('adminStatus');
+  let adminOn=false, adminPassVal='';
 
   // modal
-  window.dlg = document.getElementById('dlg');
-  const frm = document.getElementById('frm');
-  const fDay = document.getElementById('fDay');
-  const fPeriod = document.getElementById('fPeriod');
-  const fSegment = document.getElementById('fSegment');
-  const fStart = document.getElementById('fStart');
-  const fSpan = document.getElementById('fSpan');
-  const fResource = document.getElementById('fResource');
-  const fQty = document.getElementById('fQty');
-  const fTeacher = document.getElementById('fTeacher');
-  const fClass = document.getElementById('fClass');
-  const fNotes = document.getElementById('fNotes');
-  const conflictMsg = document.getElementById('conflictMsg');
+  window.dlg=document.getElementById('dlg');
+  const frm=document.getElementById('frm');
+  const fDay=document.getElementById('fDay');
+  const fPeriod=document.getElementById('fPeriod');
+  const fSegment=document.getElementById('fSegment');
+  const fStart=document.getElementById('fStart');
+  const fSpan=document.getElementById('fSpan');
+  const fResource=document.getElementById('fResource');
+  const fQty=document.getElementById('fQty');
+  const fTeacher=document.getElementById('fTeacher');
+  const fClass=document.getElementById('fClass');
+  const fNotes=document.getElementById('fNotes');
+  const conflictMsg=document.getElementById('conflictMsg');
 
   // init
-  datePicker.value = toYmd(today);
+  datePicker.value=toYmd(today);
   fillFormDays();
   refreshAll();
   setInterval(refreshAll, REFRESH_MS);
   updateAdminUI();
 
-  // --- eventos ---
+  // eventos
   btnNew.addEventListener('click', ()=>{ resetForm(); dlg.showModal(); });
 
-  // navegação de semanas
-  prevWeek.addEventListener('click', ()=>{ weekStart = addDays(weekStart, -7); fillFormDays(); renderCalendars(); });
-  nextWeek.addEventListener('click', ()=>{ weekStart = addDays(weekStart, 7); fillFormDays(); renderCalendars(); });
-  thisWeek.addEventListener('click', ()=>{ weekStart = startOfWeek(new Date()); datePicker.value = toYmd(new Date()); fillFormDays(); renderCalendars(); });
-  datePicker.addEventListener('change', (e)=>{ const d=new Date(e.target.value+'T00:00'); if(!isNaN(d)) { weekStart = startOfWeek(d); fillFormDays(); renderCalendars(); } });
+  prevWeek.addEventListener('click', ()=>{ weekStart=addDays(weekStart,-7); fillFormDays(); renderCalendars(); });
+  nextWeek.addEventListener('click', ()=>{ weekStart=addDays(weekStart, 7); fillFormDays(); renderCalendars(); });
+  thisWeek.addEventListener('click', ()=>{ weekStart=startOfWeek(new Date()); datePicker.value=toYmd(new Date()); fillFormDays(); renderCalendars(); });
+  datePicker.addEventListener('change', e=>{ const d=new Date(e.target.value+'T00:00'); if(!isNaN(d)){ weekStart=startOfWeek(d); fillFormDays(); renderCalendars(); } });
 
-  // quando mudar Período ou Segmento, recarrega opções de Início
-  function populateStartsAndKeepSafe() {
-    const prev = fStart.value;
-    populateStarts();
-    if ([...fStart.options].some(o => o.value === prev)) fStart.value = prev;
-    else if (fStart.options.length > 0) fStart.selectedIndex = 0;
+  function lockQtyIfRoom(){
+    const r=fResource.value;
+    const isRoom=(r==='lab_tec'||r==='sala_maker');
+    fQty.value=isRoom?1:Math.max(1, +fQty.value||1);
+    fQty.min = 1;
+    fQty.max = isRoom ? 1 : 9999;
+    fQty.readOnly = isRoom;
   }
-  fPeriod.addEventListener('change', populateStartsAndKeepSafe);
-  fSegment.addEventListener('change', populateStartsAndKeepSafe);
+  fResource.addEventListener('change', lockQtyIfRoom);
+
+  function populateStartsAndKeep(){
+    const prev=fStart.value; populateStarts();
+    if ([...fStart.options].some(o=>o.value===prev)) fStart.value=prev;
+  }
+  fPeriod.addEventListener('change', populateStartsAndKeep);
+  fSegment.addEventListener('change', populateStartsAndKeep);
 
   btnExport.addEventListener('click', ()=>{
-    const blob = new Blob([JSON.stringify({ totals, reservations }, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='reservas.json'; a.click(); URL.revokeObjectURL(url);
+    const blob=new Blob([JSON.stringify({totals,reservations},null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='reservas.json'; a.click(); URL.revokeObjectURL(url);
   });
 
-  importFile.addEventListener('change', async (e)=>{
+  importFile.addEventListener('change', async e=>{
     const f=e.target.files[0]; if(!f) return;
     try{ const text=await f.text(); const data=JSON.parse(text); await api('import',{data}); await refreshAll(); alert('Importado!'); }
     catch{ alert('Arquivo inválido.'); }
@@ -275,63 +274,67 @@
   });
 
   btnAdmin.addEventListener('click', ()=>{
-    if (!adminOn) {
-      const v = (adminPassInput.value || '').trim();
-      if (!v) { alert('Digite a senha admin.'); return; }
-      adminPassVal = v;
-      adminOn = true;
-    } else {
-      adminOn = false;
-      adminPassVal = '';
-      adminPassInput.value = '';
+    if(!adminOn){
+      const v=(adminPassInput.value||'').trim();
+      if(!v){ alert('Digite a senha admin.'); return; }
+      adminPassVal=v; adminOn=true;
+    }else{
+      adminOn=false; adminPassVal=''; adminPassInput.value='';
     }
-    updateAdminUI();
-    renderCalendars();
+    updateAdminUI(); renderCalendars();
   });
 
-  frm.addEventListener('submit', async (e)=>{
+  frm.addEventListener('submit', async e=>{
     e.preventDefault();
-    const dayIdx = parseInt(fDay.value,10);
-    const period = fPeriod.value;
-    const segment = fSegment.value;
-    const resource = fResource.value;
-    const qty = clampInt(fQty.value,1,9999);
-    const span = clampInt(fSpan.value,1,6);
-    const teacher = fTeacher.value.trim();
-    const turma = fClass.value.trim();
-    const notes = fNotes.value.trim();
+    const dayIdx=parseInt(fDay.value,10);
+    const period=fPeriod.value;
+    const segment=fSegment.value;
+    const resource=fResource.value;
+    const span=clampInt(fSpan.value,1,6);
 
-    const dayDate = addDays(weekStart, dayIdx);
-    const starts = getStartsFor(period, segment);
-    const i = starts.indexOf(fStart.value);
-    if (i === -1) { alert('Início inválido.'); return; }
+    let qty=clampInt(fQty.value,1,9999);
+    if (resource==='lab_tec' || resource==='sala_maker') qty=1;
 
-    const slots=[];
-    for(let k=0;k<span;k++){ const s=starts[i+k]; if(!s) break; slots.push({start:s,end:add45(s)}); }
+    const teacher=fTeacher.value.trim();
+    const turma=fClass.value.trim();
+    const notes=fNotes.value.trim();
 
-    const conflicts = checkConflicts(dayDate, slots, resource, qty);
-    if (conflicts.length){
-      conflictMsg.innerHTML = '<b>Conflito:</b><br>'+conflicts.map(c=>`• ${c.time} (faltam ${c.lack})`).join('<br>');
+    const dayDate=addDays(weekStart,dayIdx);
+    const starts=getStartsFor(period,segment);
+    const i=starts.indexOf(fStart.value);
+    if(i===-1){ alert('Início inválido.'); return; }
+
+    const slots=[]; for(let k=0;k<span;k++){ const s=starts[i+k]; if(!s) break; slots.push({start:s,end:add45(s)}); }
+
+    const conflicts=checkConflicts(dayDate, slots, resource, qty);
+    if(conflicts.length){
+      conflictMsg.innerHTML='<b>Conflito:</b><br>'+conflicts.map(c=>`• ${c.time} (faltam ${c.lack})`).join('<br>');
       return;
     }
 
-    await api('save',{ rec:{ date: toYmd(dayDate), period, segment, resource, qty, teacher, turma, notes, slots } });
+    await api('save',{ rec:{
+      date:toYmd(dayDate), period, segment, resource, qty, teacher, turma, notes, slots
+    }});
     dlg.close(); conflictMsg.textContent=''; await refreshAll();
   });
 
-  // ======= render =======
+  // render
   function renderCalendars(){
-    totT.textContent = totals.tablets;
-    totN.textContent = totals.notebooks;
+    totTI.textContent = totals.tablets_internet;
+    totTG.textContent = totals.tablets_geral;
+    totN.textContent  = totals.notebooks;
+    totLT.textContent = totals.lab_tec;
+    totSM.textContent = totals.sala_maker;
+
     renderCalendar(calMorning, MORNING_COMBINED, 'manha');
     renderCalendar(calAfternoon, AFTERNOON_COMBINED, 'tarde');
   }
 
   function renderCalendar(container, rows, period){
-    const days = getWeekDays(weekStart);
-    const table = document.createElement('table'); table.className='calendar';
+    const days=getWeekDays(weekStart);
+    const table=document.createElement('table'); table.className='calendar';
     const thead=document.createElement('thead'); const trh=document.createElement('tr');
-    trh.innerHTML = '<th class="time-col">Horário</th>'+days.map(d=>`<th>${weekdayName(d)}<div class="small">${toBr(d)}</div></th>`).join('');
+    trh.innerHTML='<th class="time-col">Horário</th>'+days.map(d=>`<th>${weekdayName(d)}<div class="small">${toBr(d)}</div></th>`).join('');
     thead.appendChild(trh); table.appendChild(thead);
 
     const tbody=document.createElement('tbody');
@@ -339,103 +342,106 @@
       const tr=document.createElement('tr');
       const tdTime=document.createElement('td'); tdTime.className='time-col';
       if(row.intervalo){
-        tdTime.innerHTML = `<div class="slot-label">${row.label}</div>`;
+        tdTime.innerHTML=`<div class="slot-label">${row.label}</div>`;
         tr.appendChild(tdTime);
         for(let i=0;i<5;i++){ const td=document.createElement('td'); td.className='intervalo'; tr.appendChild(td); }
         tbody.appendChild(tr); return;
       }
-      tdTime.innerHTML = `<div class="slot-label">${row.label}</div>`;
+      tdTime.innerHTML=`<div class="slot-label">${row.label}</div>`;
       tr.appendChild(tdTime);
 
-      for (let c=0;c<5;c++){
+      for(let c=0;c<5;c++){
         const td=document.createElement('td');
         const d=addDays(weekStart,c); const ymd=toYmd(d);
-        const starters = reservations.filter(r=> r.date===ymd && r.period===period && r.slots.some(s=>s.start===row.start));
+
+        const starters=reservations.filter(r=> r.date===ymd && r.period===period && r.slots.some(s=>s.start===row.start));
         starters.forEach(r=>{
           const div=document.createElement('div'); div.className='reservation';
-          const typeClass=(r.resource==='tablets')?'tablet':'note';
-          div.innerHTML = `<span class="qty">${r.qty}×</span> <span class="type ${typeClass}">${r.resource==='tablets'?'📱 Tablets':'💻 Notes'}</span> · <span>${esc(r.turma)}</span> · <span class="meta">${esc(r.teacher)}</span>`+(r.notes?` · <span class="meta">${esc(r.notes)}</span>`:'')+` <span class="del" title="Remover">🗑</span>`;
-          const del = div.querySelector('.del');
+          const label = resLabel(r.resource);
+          div.innerHTML = `<span class="qty">${r.qty}×</span> <span>${label}</span> · <span>${esc(r.turma)}</span> · <span class="meta">${esc(r.teacher)}</span>`+(r.notes?` · <span class="meta">${esc(r.notes)}</span>`:'')+` <span class="del" title="Remover">🗑</span>`;
+          const del=div.querySelector('.del');
           del.addEventListener('click', async (ev)=>{
             ev.stopPropagation();
-            if (!adminOn) return;
-            if (!confirm('Excluir esta reserva?')) return;
-            try { await api('delete', { id: r.id, admin: adminPassVal }); await refreshAll(); }
-            catch(e){ alert('Senha inválida ou erro ao excluir.'); adminOn=false; adminPassVal=''; adminPassInput.value=''; updateAdminUI(); renderCalendars(); }
+            if(!adminOn) return;
+            if(!confirm('Excluir esta reserva?')) return;
+            try{ await api('delete',{id:r.id,admin:adminPassVal}); await refreshAll(); }
+            catch(e){ alert('Erro ao excluir.'); }
           });
           td.appendChild(div);
         });
 
-        const available = availabilityAt(d,row.start);
-        const p=document.createElement('div'); p.className='small'; p.textContent=`Disp.: ${available.tablets}📱 / ${available.notebooks}💻`;
+        const av=availabilityAt(d,row.start);
+        const p=document.createElement('div'); p.className='small';
+        p.textContent=`Disp.: ${av.ipads_internet}📱Int / ${av.ipads_geral}📱Ger / ${av.notebooks}💻 / ${av.lab_tec}🧪 / ${av.sala_maker}🛠️`;
         td.appendChild(p);
 
-        td.addEventListener('click',()=>{
-          resetForm();
-          fDay.value=String(c);
-          fPeriod.value=period;
-          populateStarts();          // monta opções para o período/segmento atual
-          fStart.value=row.start;    // seleciona o horário da célula
-          dlg.showModal();
+        td.addEventListener('click', ()=>{
+          resetForm(); fDay.value=String(c); fPeriod.value=period; populateStarts(); fStart.value=row.start; dlg.showModal();
         });
+
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
     });
-    table.appendChild(tbody); container.innerHTML=''; container.appendChild(table);
+    table.appendChild(tbody);
+    container.innerHTML=''; container.appendChild(table);
     container.classList.toggle('admin-on', adminOn);
   }
 
-  // ======= disponibilidade & conflitos (sem dupla contagem) =======
-  function availabilityAt(dateObj, startHHMM){
-    const ymd = toYmd(dateObj);
-    const s0 = toMin(startHHMM), e0 = s0 + 45;
-    let usedT = 0, usedN = 0;
+  // disponibilidade / conflitos (sem dupla contagem)
+  function availabilityAt(dateObj,startHHMM){
+    const ymd=toYmd(dateObj); const s0=toMin(startHHMM), e0=s0+45;
+    const used={ ipads_internet:0, ipads_geral:0, notebooks:0, lab_tec:0, sala_maker:0 };
 
     reservations.forEach(r=>{
-      if (r.date !== ymd) return;
-      const overlaps = r.slots && r.slots.some(s=>{
-        const a = toMin(s.start), b = toMin(s.end);
-        return Math.max(s0, a) < Math.min(e0, b);
-      });
-      if (overlaps) {
-        if (r.resource === 'tablets') usedT += r.qty; else usedN += r.qty;
-      }
+      if(r.date!==ymd) return;
+      const overlaps = r.slots && r.slots.some(s=> Math.max(s0, toMin(s.start)) < Math.min(e0, toMin(s.end)));
+      if(overlaps){ used[r.resource] = (used[r.resource]||0) + r.qty; }
     });
 
     return {
-      tablets: Math.max(0, totals.tablets - usedT),
-      notebooks: Math.max(0, totals.notebooks - usedN)
+      ipads_internet: Math.max(0, (totals.tablets_internet||0) - (used.ipads_internet||0)),
+      ipads_geral:    Math.max(0, (totals.tablets_geral||0)    - (used.ipads_geral||0)),
+      notebooks:      Math.max(0, (totals.notebooks||0)        - (used.notebooks||0)),
+      lab_tec:        Math.max(0, (totals.lab_tec||0)          - (used.lab_tec||0)),
+      sala_maker:     Math.max(0, (totals.sala_maker||0)       - (used.sala_maker||0)),
     };
   }
 
   function checkConflicts(dayDate, slots, resource, qty){
-    const ymd = toYmd(dayDate);
-    const conflicts = [];
-
+    const ymd=toYmd(dayDate); const cap = capFor(resource);
+    const conflicts=[];
     slots.forEach(ns=>{
-      const s0 = toMin(ns.start), e0 = s0 + 45;
-      let used = 0;
-
+      const s0=toMin(ns.start), e0=s0+45; let used=0;
       reservations.forEach(r=>{
-        if (r.date !== ymd) return;
-        if (r.resource !== resource) return;
-        const overlaps = r.slots && r.slots.some(s=>{
-          const a = toMin(s.start), b = toMin(s.end);
-          return Math.max(s0, a) < Math.min(e0, b);
-        });
-        if (overlaps) used += r.qty; // conta 1x por reserva
+        if(r.date!==ymd || r.resource!==resource) return;
+        const overlaps = r.slots && r.slots.some(s=> Math.max(s0, toMin(s.start)) < Math.min(e0, toMin(s.end)));
+        if(overlaps) used += r.qty;
       });
-
-      const cap = (resource==='tablets') ? totals.tablets : totals.notebooks;
       const left = cap - used;
-      if (qty > left) conflicts.push({ time:`${ns.start}–${ns.end}`, lack: qty - left });
+      if(qty>left) conflicts.push({ time:`${ns.start}–${ns.end}`, lack: qty-left });
     });
-
     return conflicts;
   }
 
-  // ======= helpers =======
+  // helpers
+  function capFor(res){
+    if(res==='ipads_internet') return totals.tablets_internet||0;
+    if(res==='ipads_geral')    return totals.tablets_geral||0;
+    if(res==='notebooks')      return totals.notebooks||0;
+    if(res==='lab_tec')        return totals.lab_tec||0;
+    if(res==='sala_maker')     return totals.sala_maker||0;
+    return 0;
+  }
+  function resLabel(res){
+    return res==='ipads_internet'?'📱 iPads Internet'
+        : res==='ipads_geral'   ?'📱 iPads Geral'
+        : res==='notebooks'     ?'💻 Notebooks'
+        : res==='lab_tec'       ?'🧪 Lab Tec'
+        : res==='sala_maker'    ?'🛠️ Sala Maker'
+        : res;
+  }
+
   async function api(action,payload={}){
     const body='data='+encodeURIComponent(JSON.stringify({action,...payload}));
     const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
@@ -445,27 +451,27 @@
     return json;
   }
 
-  async function refreshAll(){ const t=await api('getTotals'); totals=t.totals; const l=await api('list'); reservations=l.items||[]; renderCalendars(); }
-  function populateStarts(){ const list=getStartsFor(fPeriod.value,fSegment.value); fStart.innerHTML=list.map(t=>`<option value="${t}">${t} – ${add45(t)}</option>`).join(''); }
+  async function refreshAll(){ const t=await api('getTotals'); totals=t.totals||totals; const l=await api('list'); reservations=l.items||[]; renderCalendars(); }
+  function populateStarts(){ const list=getStartsFor(fPeriod.value,fSegment.value); fStart.innerHTML=list.map(t=>`<option value="${t}">${t} – ${add45(t)}</option>`).join(''); lockQtyIfRoom(); }
   function getStartsFor(period,segment){ if(period==='tarde') return AFTERNOON_ALL.slice(); if(segment==='Infantil'||segment==='Fundamental 1') return MORNING_IF1.slice(); if(segment==='Fundamental 2'||segment==='Ensino Médio') return MORNING_F2M.slice(); return []; }
-  function resetForm(){ conflictMsg.textContent=''; fDay.value='0'; fPeriod.value='manha'; fSegment.value='Infantil'; populateStarts(); fStart.value=getStartsFor('manha','Infantil')[0]; fSpan.value=1; fResource.value='tablets'; fQty.value=10; fTeacher.value=''; fClass.value=''; fNotes.value=''; }
+  function resetForm(){ conflictMsg.textContent=''; fDay.value='0'; fPeriod.value='manha'; fSegment.value='Infantil'; populateStarts(); fStart.value=getStartsFor('manha','Infantil')[0]; fSpan.value=1; fResource.value='ipads_geral'; fQty.value=10; lockQtyIfRoom(); fTeacher.value=''; fClass.value=''; fNotes.value=''; }
   function fillFormDays(){ const days=getWeekDays(weekStart); fDay.innerHTML=days.map((d,i)=>`<option value="${i}">${weekdayName(d)} - ${toBr(d)}</option>`).join(''); }
 
   function startOfWeek(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); const day=x.getDay(); const diff=(day===0?-6:1-day); x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x; }
   function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
   function getWeekDays(start){ return [0,1,2,3,4].map(i=>addDays(start,i)); }
   function toBr(d){ return d.toLocaleDateString('pt-BR'); }
-  function toYmd(d){ const y=d.getFullYear(), m=('0'+(d.getMonth()+1)).slice(-2), da=('0'+d.getDate()).slice(-2); return `${y}-${m}-${da}`; }
+  function toYmd(d){ const y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),da=('0'+d.getDate()).slice(-2); return `${y}-${m}-${da}`; }
   function weekdayName(d){ const names=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']; const idx=(d.getDay()+6)%7; return names[idx]; }
   function toMin(hm){ const [h,m]=hm.split(':').map(Number); return h*60+m; }
   function fromMin(min){ const h=Math.floor(min/60), m=min%60; return `${('0'+h).slice(-2)}:${('0'+m).slice(-2)}`; }
   function add45(hm){ return fromMin(toMin(hm)+45); }
-  function clampInt(v,min,max){ v=parseInt(v,10); if(isNaN(v)) v=min; return Math.max(min, Math.min(max, v)); }
-  function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","</": "&lt;/","»":"&raquo;","\"":"&quot;","'":"&#39;"}[c]||c)); }
+  function clampInt(v,min,max){ v=parseInt(v,10); if(isNaN(v)) v=min; return Math.max(min,Math.min(max,v)); }
+  function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
 
   function updateAdminUI(){
-    if (adminStatus) adminStatus.textContent = 'Modo admin: ' + (adminOn ? 'ligado' : 'desligado');
-    document.querySelectorAll('.calendar').forEach(el => el.classList.toggle('admin-on', adminOn));
+    if(adminStatus) adminStatus.textContent='Modo admin: '+(adminOn?'ligado':'desligado');
+    document.querySelectorAll('.calendar').forEach(el=>el.classList.toggle('admin-on', adminOn));
   }
 })();
 </script>
